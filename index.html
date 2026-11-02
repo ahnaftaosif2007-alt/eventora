@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="EVENTORA is an event discovery and management prototype. Browse sample events, read rules and deadlines, and explore the registration design.">
+  <meta name="theme-color" content="#0a1d3b">
+  <title>EVENTORA · Event Discovery &amp; Management</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ============ HEADER & NAVIGATION ============ -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="#home" class="brand" aria-label="EVENTORA home">
+        <span class="brand-mark" aria-hidden="true">E</span>
+        <span class="brand-name">EVENTORA</span>
+      </a>
+
+      <button class="nav-toggle" id="navToggle" type="button"
+              aria-expanded="false" aria-controls="primaryNav" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <nav id="primaryNav" class="primary-nav" aria-label="Main navigation">
+        <ul>
+          <li><a href="#home" data-nav="home">Home</a></li>
+          <li><a href="#events" data-nav="events">Events</a></li>
+          <li><a href="#announcements" data-nav="announcements">Updates</a></li>
+          <li><a href="#about" data-nav="about">About</a></li>
+          <li><a href="#contact" data-nav="contact">Contact</a></li>
+          <li><a href="#id" data-nav="id">Digital ID</a></li>
+          <li><a href="#share" data-nav="share">QR &amp; Share</a></li>
+        </ul>
+        <a href="#register" class="btn btn-gold nav-cta">Register</a>
+      </nav>
+    </div>
+  </header>
+
+  <div class="demo-banner" role="note">
+    Prototype demo. All events are sample content. Registration here is not submitted or stored anywhere.
+  </div>
+
+  <main id="main" tabindex="-1">
+
+    <!-- ============ HOME ============ -->
+    <section class="view" data-view="home" id="view-home" hidden>
+      <div class="hero">
+        <div class="container hero-inner">
+          <p class="eyebrow">Discover · Prepare · Participate</p>
+          <h1>Where every great event <span class="gold">finds its audience.</span></h1>
+          <p class="lead">
+            EVENTORA is an elegant home for debates, workshops, talks and community gatherings,
+            with dates, venues, rules and registration deadlines gathered in one calm place.
+          </p>
+          <div class="hero-actions">
+            <a class="btn btn-gold" href="#events">Browse events</a>
+            <a class="btn btn-ghost" href="#about">About EVENTORA</a>
+          </div>
+          <ul class="hero-stats">
+            <li><strong id="statEvents">0</strong><span>Sample events</span></li>
+            <li><strong id="statCategories">0</strong><span>Categories</span></li>
+            <li><strong>24/7</strong><span>Public information</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="container section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Featured</p>
+            <h2>Featured events</h2>
+          </div>
+          <a href="#events" class="text-link">View all events ?</a>
+        </div>
+        <div class="grid" id="featuredGrid"></div>
+      </div>
+
+      <div class="container section section-tight">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Latest</p>
+            <h2>Recent updates</h2>
+          </div>
+          <a href="#announcements" class="text-link">All updates ?</a>
+        </div>
+        <div class="list" id="homeAnnouncements"></div>
+      </div>
+    </section>
+
+    <!-- ============ EVENTS ============ -->
+    <section class="view" data-view="events" id="view-events" hidden>
+      <div class="container page-head">
+        <p class="eyebrow">Explore</p>
+        <h1>Events</h1>
+        <p>Search, filter and sort the sample events. Select any event to see its dates, venue, rules and deadline.</p>
+      </div>
+
+      <div class="container section-tight">
+        <form class="filters" id="filterForm" role="search">
+          <div class="field">
+            <label for="searchInput">Search</label>
+            <input id="searchInput" type="search" placeholder="Title, venue, keyword…" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="sortSelect">Sort by</label>
+            <select id="sortSelect">
+              <option value="date">Event date (soonest)</option>
+              <option value="deadline">Registration deadline</option>
+              <option value="title">Title (A to Z)</option>
+            </select>
+          </div>
+          <button type="button" class="btn btn-ghost" id="resetFilters">Reset filters</button>
+        </form>
+
+        <p class="label-small">Categories</p>
+        <div class="chips" id="chipList" role="group" aria-label="Filter by category"></div>
+
+        <p class="results-count" id="resultsCount" aria-live="polite"></p>
+        <div class="grid" id="eventGrid"></div>
+
+        <div class="empty" id="emptyState" hidden>
+          <h3>No events match your search</h3>
+          <p>Try a different keyword or choose another category.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ EVENT DETAIL ============ -->
+    <section class="view" data-view="event" id="view-event" hidden>
+      <div class="container narrow section-tight" id="eventDetail"></div>
+    </section>
+
+    <!-- ============ REGISTER ============ -->
+    <section class="view" data-view="register" id="view-register" hidden>
+      <div class="container narrow page-head">
+        <p class="eyebrow">Demo form</p>
+        <h1>Register for an event</h1>
+        <p class="note">
+          This is a prototype. Submitting shows a demo confirmation only. Your details are not sent to an
+          organizer, not stored, and not verified.
+        </p>
+      </div>
+
+      <div class="container narrow section-tight">
+        <form class="form" id="registerForm" novalidate>
+          <div class="field">
+            <label for="fName">Full name <span class="req" aria-hidden="true">*</span></label>
+            <input id="fName" name="name" type="text" autocomplete="name" required
+                   aria-describedby="err-name">
+            <p class="error" id="err-name" hidden></p>
+          </div>
+
+          <div class="field">
+            <label for="fEmail">Email address <span class="req" aria-hidden="true">*</span></label>
+            <input id="fEmail" name="email" type="email" autocomplete="email" required
+                   aria-describedby="err-email">
+            <p class="error" id="err-email" hidden></p>
+          </div>
+
+          <div class="field">
+            <label for="fInstitution">School, college or organization <span class="req" aria-hidden="true">*</span></label>
+            <input id="fInstitution" name="institution" type="text" autocomplete="organization" required
+                   aria-describedby="err-institution">
+            <p class="error" id="err-institution" hidden></p>
+          </div>
+
+          <div class="field">
+            <label for="fEvent">Event <span class="req" aria-hidden="true">*</span></label>
+            <select id="fEvent" name="event" required aria-describedby="err-event"></select>
+            <p class="error" id="err-event" hidden></p>
+          </div>
+
+          <div class="field">
+            <label class="checkbox" for="fConsent">
+              <input id="fConsent" name="consent" type="checkbox" required aria-describedby="err-consent">
+              <span>I understand this is a demo and that my details are not submitted or stored.
+                <span class="req" aria-hidden="true">*</span></span>
+            </label>
+            <p class="error" id="err-consent" hidden></p>
+          </div>
+
+          <p class="error" id="formError" role="alert" hidden></p>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-gold">Submit demo registration</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============ REGISTRATION SUCCESS ============ -->
+    <section class="view" data-view="success" id="view-success" hidden>
+      <div class="container narrow center section-tight">
+        <div class="success-mark" aria-hidden="true">?</div>
+        <p class="eyebrow">Demo confirmation</p>
+        <h1>Thank you, <span id="successName">participant</span>.</h1>
+        <p>Your demo registration screen has been completed. Please keep this reference for the prototype walkthrough.</p>
+
+        <div class="ticket">
+          <p><strong>Reference:</strong> <span id="successRef"></span></p>
+          <p><strong>Event:</strong> <span id="successEvent"></span></p>
+          <p><strong>Event date:</strong> <span id="successDate"></span></p>
+        </div>
+
+        <p class="note">
+          Important: this is a prototype. No registration has been submitted to any organizer, no personal data
+          has been stored, and no identity has been verified.
+        </p>
+
+        <div class="hero-actions center-actions">
+          <a class="btn btn-navy" href="#events">Back to events</a>
+          <a class="btn btn-ghost" href="#home">Go to home</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ANNOUNCEMENTS ============ -->
+    <section class="view" data-view="announcements" id="view-announcements" hidden>
+      <div class="container page-head">
+        <p class="eyebrow">Updates</p>
+        <h1>Announcements</h1>
+        <p>Sample news and notices from the organizing team. Newest first.</p>
+      </div>
+      <div class="container section-tight">
+        <div class="list" id="announcementList"></div>
+      </div>
+    </section>
+
+    <!-- ============ ABOUT ============ -->
+    <section class="view" data-view="about" id="view-about" hidden>
+      <div class="container page-head">
+        <p class="eyebrow">About</p>
+        <h1>About EVENTORA</h1>
+        <p>EVENTORA is a prototype for a calm, reliable way to discover, prepare for and manage events.
+          It keeps the important information visible: what happens, when, where, under what rules, and by when
+          to register.</p>
+      </div>
+
+      <div class="container section-tight">
+        <div class="three">
+          <article class="pillar">
+            <p class="num">01</p>
+            <h3>Discover</h3>
+            <p>Browse by category, search by keyword and sort by date or deadline.</p>
+          </article>
+          <article class="pillar">
+            <p class="num">02</p>
+            <h3>Prepare</h3>
+            <p>Read rules, eligibility and deadlines before you commit.</p>
+          </article>
+          <article class="pillar">
+            <p class="num">03</p>
+            <h3>Participate</h3>
+            <p>Register, receive confirmation and, in future versions, carry a verified digital ID.</p>
+          </article>
+        </div>
+
+        <div class="organizer">
+          <p class="eyebrow">Organizer</p>
+          <h2>Sample Organizing Team</h2>
+          <p>
+            This section is a placeholder. Replace the organizer name, description and responsibilities in
+            <code>index.html</code> with your own details. Event organizers in the sample data are fictional.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONTACT ============ -->
+    <section class="view" data-view="contact" id="view-contact" hidden>
+      <div class="container page-head">
+        <p class="eyebrow">Contact</p>
+        <h1>Get in touch</h1>
+        <p>For questions about events, sponsorship or the prototype, use the sample details below.
+          Replace them with your real contact information before publishing.</p>
+      </div>
+
+      <div class="container narrow section-tight">
+        <ul class="contact-list">
+          <li>
+            <span>Email</span>
+            <a href="mailto:hello@example.com">hello@example.com</a>
+          </li>
+          <li>
+            <span>Phone</span>
+            <a href="tel:+000000000000">+00 000 000 000 (placeholder)</a>
+          </li>
+          <li>
+            <span>Office</span>
+            <p>Sample Street, Sample City (placeholder address)</p>
+          </li>
+          <li>
+            <span>Office hours</span>
+            <p>Sunday to Thursday, 9:00 to 17:00</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ DIGITAL ID PREVIEW ============ -->
+    <section class="view" data-view="id" id="view-id" hidden>
+      <div class="container page-head">
+        <p class="eyebrow">Future-ready design</p>
+        <h1>Participant verification &amp; digital ID</h1>
+        <p>This is a design preview of how verified participant IDs could work in a future version.
+          It does not verify anyone and does not issue a real identity.</p>
+      </div>
+
+      <div class="container id-layout section-tight">
+        <div class="id-card" role="img" aria-label="Sample participant ID card. This is not a valid identity.">
+          <div class="id-top">
+            <span>EVENTORA</span>
+            <span>PARTICIPANT ID</span>
+          </div>
+          <div class="id-body">
+            <div class="id-photo" aria-hidden="true">?</div>
+            <dl>
+              <dt>Name</dt><dd>Sample Participant</dd>
+              <dt>ID</dt><dd>EVT-0000-SAMPLE</dd>
+              <dt>Event</dt><dd>Sample event</dd>
+              <dt>Status</dt><dd>Not verified (sample)</dd>
+            </dl>
+          </div>
+          <div class="id-watermark">SAMPLE · NOT A VALID IDENTITY</div>
+        </div>
+
+        <div>
+          <h2>How verification would work</h2>
+          <ol class="steps">
+            <li><strong>Register</strong><br>Provide your name, email and institution.</li>
+            <li><strong>Confirm email</strong><br>Use a one-time link (planned for a future version).</li>
+            <li><strong>Institution check</strong><br>An organizer reviews the request. This is never automatic.</li>
+            <li><strong>Issue ID</strong><br>A unique code and optional QR check-in are generated.</li>
+          </ol>
+          <p class="note">In this prototype none of these steps run. The card above is a static design sample.</p>
+          <button class="btn btn-ghost" type="button" disabled>Verification unavailable in prototype</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ QR & SHARE ============ -->
+    <section class="view" data-view="share" id="view-share" hidden>
+      <div class="container page-head">
+        <p class="eyebrow">Share</p>
+        <h1>QR code &amp; public link</h1>
+        <p>Scan the code to open the public EVENTORA website, or copy the link. The code image is optional and
+          appears once you add a file named <code>qr.png</code> next to <code>index.html</code>. See the README.</p>
+      </div>
+
+      <div class="container qr-layout section-tight">
+        <div class="qr-box">
+          <img id="qrImg" src="qr.png" alt="QR code linking to the public EVENTORA website" width="240" height="240" hidden>
+          <div class="qr-fallback" id="qrFallback">
+            <strong>QR image not added yet</strong>
+            <span>Create a QR code for your public link and save it as <code>qr.png</code>.</span>
+          </div>
+        </div>
+
+        <div>
+          <h2>Public website link</h2>
+          <p class="url" id="publicUrlText">Loading…</p>
+          <button class="btn btn-gold" id="copyLink" type="button">Copy link</button>
+          <p class="note" id="copyStatus" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div>
+        <a href="#home" class="brand" aria-label="EVENTORA home">
+          <span class="brand-mark" aria-hidden="true">E</span>
+          <span class="brand-name">EVENTORA</span>
+        </a>
+        <p class="footer-copy">Event discovery and management prototype. All events are sample content.</p>
+      </div>
+
+      <nav aria-label="Footer explore">
+        <h2>Explore</h2>
+        <ul>
+          <li><a href="#events">Events</a></li>
+          <li><a href="#announcements">Updates</a></li>
+          <li><a href="#register">Register</a></li>
+        </ul>
+      </nav>
+
+      <nav aria-label="Footer company">
+        <h2>Company</h2>
+        <ul>
+          <li><a href="#about">About</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="#id">Digital ID</a></li>
+        </ul>
+      </nav>
+
+      <div>
+        <h2>Connect</h2>
+        <ul>
+          <li><a href="#share">QR code &amp; link</a></li>
+          <li><a href="mailto:hello@example.com">hello@example.com</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>© <span id="year"></span> EVENTORA · Prototype demo</p>
+      <p><a href="#about">Privacy note</a> · Prototype only, no data is stored</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
