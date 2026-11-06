@@ -1,0 +1,61 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+const config = window.EVENTORA_SUPABASE;
+const $ = (selector) => document.querySelector(selector);
+const loginPanel = $("#loginPanel"), dashboard = $("#dashboard"), message = $("#message");
+let supabase = null, records = [];
+function showMessage(text, type = "") { message.textContent=text; message.className="notice"+(type?" "+type:""); message.hidden=!text; }
+function showLoggedOut(){loginPanel.hidden=false;dashboard.hidden=true;}
+function showDashboard(email){loginPanel.hidden=true;dashboard.hidden=false;$("#signedInAs").textContent="Signed in as "+email;}
+async function isAdministrator(){const {data,error}=await supabase.rpc("is_eventora_admin");if(error)throw error;return data===true;}
+async function guardSession(){
+  const {data:{session},error}=await supabase.auth.getSession();if(error)throw error;
+  if(!session){showLoggedOut();return;}
+  if(!(await isAdministrator())){await supabase.auth.signOut();showLoggedOut();showMessage("This account is not authorised for the organizer dashboard.","error");return;}
+  showDashboard(session.user.email||"Administrator");await loadRegistrations();
+}
+function formatDate(value){if(!value)return "—";return new Intl.DateTimeFormat(undefined,{dateStyle:"medium",timeStyle:"short"}).format(new Date(value));}
+function escapeHtml(value){return String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
+function updateCounts(list){$("#totalCount").textContent=list.length;$("#pendingCount").textContent=list.filter(r=>r.status==="pending").length;$("#approvedCount").textContent=list.filter(r=>r.status==="approved").length;$("#rejectedCount").textContent=list.filter(r=>r.status==="rejected").length;}
+function renderRows(){
+  const query=$("#search").value.trim().toLowerCase(),status=$("#statusFilter").value;
+  const filtered=records.filter(r=>{const haystack=[r.reference,r.participant_name,r.email,r.event_name,r.institution,r.team_name].join(" ").toLowerCase();return(!query||haystack.includes(query))&&(status==="all"||r.status===status);});
+  const tbody=$("#registrationRows");
+  if(!filtered.length)tbody.innerHTML='<tr><td colspan="7" class="empty">No registration records found.</td></tr>';
+  else tbody.innerHTML=filtered.map(r=>\`<tr>
+    <td><strong>\${escapeHtml(r.reference)}</strong></td>
+    <td>\${escapeHtml(r.participant_name)}<br><span class="muted">\${escapeHtml(r.email)}</span></td>
+    <td>\${escapeHtml(r.event_name)}</td><td>\${escapeHtml(r.institution||"—")}</td>
+    <td>\${escapeHtml(formatDate(r.created_at))}</td><td><span class="pill \${escapeHtml(r.status)}">\${escapeHtml(r.status)}</span></td>
+    <td><div class="row-actions"><select aria-label="New status for \${escapeHtml(r.reference)}" data-status-id="\${escapeHtml(r.id)}">
+      <option value="pending" \${r.status==="pending"?"selected":""}>Pending</option><option value="approved" \${r.status==="approved"?"selected":""}>Approved</option><option value="rejected" \${r.status==="rejected"?"selected":""}>Rejected</option>
+    </select><button type="button" data-save-id="\${escapeHtml(r.id)}">Save</button></div></td></tr>\`).join("");
+  $("#recordCount").textContent=\`Showing \${filtered.length} of \${records.length} records\`;updateCounts(records);
+}
+async function loadRegistrations(){
+  $("#registrationRows").innerHTML='<tr><td colspan="7" class="empty">Loading records…</td></tr>';
+  const {data,error}=await supabase.from("registrations").select("id,reference,participant_name,email,institution,event_name,team_name,status,created_at").order("created_at",{ascending:false}).limit(500);
+  if(error){showMessage("Could not load registrations: "+error.message,"error");$("#registrationRows").innerHTML='<tr><td colspan="7" class="empty">Unable to load records. Check the database setup and access policies.</td></tr>';return;}
+  records=data||[];renderRows();showMessage(records.length?"":"Your dashboard is ready. No registrations have been added yet.");
+}
+async function handleLogin(event){
+  event.preventDefault();const button=event.submitter;button.disabled=true;button.textContent="Signing in…";showMessage("");
+  try{const {error}=await supabase.auth.signInWithPassword({email:$("#email").value.trim(),password:$("#password").value});if(error)throw error;await guardSession();}
+  catch(error){showMessage(error.message||"Sign-in failed.","error");}
+  finally{button.disabled=false;button.textContent="Sign in securely";}
+}
+async function handleTableClick(event){
+  const button=event.target.closest("[data-save-id]");if(!button)return;
+  const id=button.dataset.saveId,select=document.querySelector(\`[data-status-id="\${CSS.escape(id)}"]\`);if(!select)return;button.disabled=true;
+  try{const {error}=await supabase.from("registrations").update({status:select.value}).eq("id",id);if(error)throw error;showMessage("Registration status updated.");await loadRegistrations();}
+  catch(error){showMessage("Update failed: "+error.message,"error");}finally{button.disabled=false;}
+}
+async function init(){
+  if(!config?.url||!config?.publishableKey){$("#configNotice").hidden=false;$("#loginForm").addEventListener("submit",e=>{e.preventDefault();showMessage("Add your Supabase project URL and publishable key first.","warning");});return;}
+  supabase=createClient(config.url,config.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  $("#loginForm").addEventListener("submit",handleLogin);
+  $("#signOut").addEventListener("click",async()=>{await supabase.auth.signOut();showLoggedOut();showMessage("You have signed out.");});
+  $("#refresh").addEventListener("click",loadRegistrations);$("#search").addEventListener("input",renderRows);$("#statusFilter").addEventListener("change",renderRows);$("#registrationRows").addEventListener("click",handleTableClick);
+  supabase.auth.onAuthStateChange((_event,session)=>{if(!session)showLoggedOut();});
+  try{await guardSession();}catch(error){showLoggedOut();showMessage(error.message||"Could not verify this session.","error");}
+}
+init();
