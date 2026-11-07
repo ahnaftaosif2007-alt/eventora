@@ -14,8 +14,10 @@ Only the Project URL and publishable key belong in the browser. Never place a Se
 2. Copy the complete contents of `supabase/schema.sql` into the editor and click Run.
 3. Confirm that `events`, `registrations` and `eventora_admins` were created.
 4. Run the complete contents of `supabase/pricing_early_bird_migration.sql` as a second query. It creates the pricing tables and Early Bird settings.
+5. Run the complete contents of `supabase/registration_intake_v1.sql` as a third query. It adds structured registration fields, segment-wise authoritative pricing, basic repeat-submission limits, and the secure `submit_eventora_registration` RPC.
+6. In the SQL Editor, verify that the function `submit_eventora_registration(jsonb)` exists before enabling live registration.
 
-RLS is enabled. Registration rows are not publicly readable or writable. The existing public registration form remains a demo until a controlled submission endpoint is added.
+RLS is enabled. Registration rows are not publicly readable or writable. The public registration form remains a demo until the matching client-side integration is deployed and tested. The migration creates the secure database endpoint but does not by itself switch the website form to live mode.
 
 ## 3. Create your administrator account
 1. Open Authentication → Users in Supabase.
@@ -55,6 +57,6 @@ The pricing values are seeded by `supabase/pricing_early_bird_migration.sql`. In
 - Discount rules: 15% club-member discount or 20% Early Bird discount (Early Bird replaces the member discount; they do not stack). Membership fee is ৳100 and is separate from segment fees.
 - The Early Bird deadline is admin-only; the public-facing status function returns only active/inactive, not the date.
 - Event editing, password reset, audit history and exports: not yet implemented.
-- Public registration writes: deliberately disabled until a protected intake flow is built.
+- Public registration writes: only through the validating `submit_eventora_registration(jsonb)` RPC; direct anonymous table inserts remain disabled. The website form still needs its client integration and end-to-end testing before real registrations.
 
 Supabase Auth issues the session JWT. The Supabase client automatically attaches the user's access token to database requests; the application does not manually embed or handle access tokens.
