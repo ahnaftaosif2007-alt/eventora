@@ -126,6 +126,27 @@ async function loadRegistrations() {
   renderRows();
   showMessage(records.length ? "" : "Your dashboard is ready. No registrations have been added yet.");
 }
+async function handlePasswordRecovery() {
+  const email = $("#email").value.trim();
+  if (!email) {
+    showMessage("Enter your account email first, then choose Forgot password.", "warning");
+    $("#email").focus();
+    return;
+  }
+  const button = $("#forgotPassword");
+  button.disabled = true;
+  showMessage("Sending a secure password reset email…");
+  try {
+    const redirectTo = new URL("reset-password.html", window.location.href).toString();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+    if (error) throw error;
+    showMessage("If the account is registered, a password reset email has been sent. Open the newest email and follow its link.", "success");
+  } catch (error) {
+    showMessage(error.message || "Could not send the password reset email.", "error");
+  } finally {
+    button.disabled = false;
+  }
+}
 async function handleLogin(event) {
   event.preventDefault();
   const button = event.submitter;
@@ -219,7 +240,7 @@ async function init() {
   supabase = createClient(config.url, config.publishableKey, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
   });
-  $("#loginForm").addEventListener("submit", handleLogin);
+  $("#loginForm").addEventListener("submit", handleLogin);\n  $("#forgotPassword")?.addEventListener("click", handlePasswordRecovery);
   $("#signOut").addEventListener("click", async () => {
     await supabase.auth.signOut();
     showLoggedOut();
