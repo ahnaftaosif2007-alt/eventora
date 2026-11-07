@@ -31,7 +31,7 @@
       <div>
         <p class="eyebrow">AUTHENTICATED ACCESS</p>
         <h2>Sign in</h2>
-        <p class="muted">Only accounts explicitly added to the EVENTORA administrator list can open this dashboard.</p>
+        <p class="muted">Only accounts assigned an active EVENTORA role can open this dashboard.</p>
       </div>
       <form id="loginForm" class="form">
         <label>Email address<input id="email" type="email" autocomplete="username" required></label>
@@ -117,11 +117,11 @@
         <ol class="rulebook-list">
           <li>Participant information and payment evidence are confidential. Share only for an authorised event task.</li>
           <li>All five Staff accounts may view registration records and submitted payment evidence once the payment module is enabled.</li>
-          <li>Only the two designated Payment Verifiers and the Main Admin may approve or reject payments.</li>
+          <li>Payment approval is reserved for the two designated Payment Verifiers and the Main Admin. This action becomes available after the payment screenshot workflow is deployed.</li>
           <li>General Staff may view records but cannot make payment decisions or change participant approval status.</li>
           <li>The Main Admin alone controls pricing, Early Bird settings, staff roles and participant approval or rejection.</li>
           <li>Never share passwords. Each person must use their own account.</li>
-          <li>Important actions must remain traceable in the audit history.</li>
+          <li>Staff role assignments and changes are recorded for accountability.</li>
           <li>The Main Admin may correct participant decisions and disable or restore staff access.</li>
         </ol>
       </section>
