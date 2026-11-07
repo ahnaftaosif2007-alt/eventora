@@ -50,6 +50,31 @@
         <article class="stat"><span>Approved</span><strong id="approvedCount">—</strong></article>
         <article class="stat"><span>Rejected</span><strong id="rejectedCount">—</strong></article>
       </div>
+      <section id="pricingPanel" class="panel pricing-panel" hidden>
+        <div class="table-head">
+          <div><p class="eyebrow">EVENT SETTINGS</p><h3>Pricing & Early Bird</h3><p class="muted">Set or clear the Early Bird deadline. The public website will not display the date.</p></div>
+          <span id="earlyBirdStatus" class="status-value inactive">Inactive</span>
+        </div>
+        <div class="pricing-facts">
+          <article><span>Club member discount</span><strong id="memberDiscount">15%</strong></article>
+          <article><span>Early Bird discount</span><strong id="earlyBirdDiscount">20%</strong></article>
+          <article><span>Membership fee</span><strong id="membershipFee">৳100</strong></article>
+        </div>
+        <form id="earlyBirdForm" class="deadline-form">
+          <label for="earlyBirdDeadline">Early Bird deadline (your local time)</label>
+          <div class="deadline-controls">
+            <input id="earlyBirdDeadline" type="datetime-local" required>
+            <button id="savePricing" class="button primary" type="submit">Save deadline</button>
+            <button id="clearEarlyBird" class="button secondary" type="button">Clear deadline</button>
+          </div>
+        </form>
+        <div id="pricingMessage" class="notice" role="status" aria-live="polite" hidden></div>
+        <div class="table-head price-table-head"><div><h3>Segment fee schedule</h3><p class="muted">Current base fees, before any eligible discount. Membership fee is separate.</p></div></div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Segment</th><th>Division</th><th>Base fee</th></tr></thead><tbody id="priceRows"><tr><td colspan="3" class="empty">Loading prices…</td></tr></tbody></table>
+        </div>
+        <p class="muted pricing-note">Early Bird replaces the club-member discount; the two discounts do not stack. AP Debate is available only in Division C.</p>
+      </section>
       <section class="panel">
         <div class="table-head">
           <div><h3>Participant records</h3><p class="muted">Only records permitted by the database security policies appear here.</p></div>
