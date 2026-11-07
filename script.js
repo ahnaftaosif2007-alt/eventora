@@ -1,195 +1,83 @@
 /* =========================================================
-   EVENTORA · script.js
+   EVENTORA Â· script.js
 
-   PART 1 · CONTENT (edit this section to change events,
+   PART 1 Â· CONTENT (edit this section to change events,
             categories, announcements and site settings)
-   PART 2 · APPLICATION CODE (routing, search, filters,
+   PART 2 Â· APPLICATION CODE (routing, search, filters,
             form validation). Usually no need to change it.
    ========================================================= */
 
 
 /* ---------------------------------------------------------
-   PART 1 · CONTENT
+   PART 1 Â· CONTENT
    --------------------------------------------------------- */
 
 const SITE_CONFIG = {
-  // After publishing, paste your public address here, for example:
-  // "https://your-username.github.io/eventora/"
-  // Leave it empty to use the address the page is opened from.
   publicUrl: "",
-  organizerName: "Sample Organizing Team"
+  organizerName: "EVENTORA"
 };
 
-// Category names used for filter buttons. Each event's "category" must match one of these.
-const CATEGORIES = ["Competitions", "Debate", "Workshops", "Talks", "Community"];
+const ACTIVE_EVENT_ID = "inter-wing-collegiate-debate-championship";
+const CATEGORIES = ["Debate", "Competitions", "Workshops", "Talks", "Community"];
 
-// SAMPLE EVENTS. All content is fictional and clearly marked as sample.
-// To add an event, copy one block, change the values, and keep the commas.
-// Dates use the format YYYY-MM-DD.
+// Only the Inter-Wing Championship is currently being prepared for registration.
+// Dates are confirmed; time, venue details and registration deadline will be published later.
 const EVENTS = [
   {
-    id: "debate-championship-2027",
-    title: "Inter-School Debate Championship 2027",
+    id: ACTIVE_EVENT_ID,
+    title: "The Inter-Wing Collegiate Debate Championship",
     category: "Debate",
     featured: true,
-    date: "2027-01-16",
-    time: "09:00 – 17:00",
-    venue: "Sample Main Auditorium",
-    address: "Placeholder address, Sample City",
-    fee: "Free (sample)",
-    capacity: 120,
-    deadline: "2027-01-05",
-    summary: "A full day of British Parliamentary debates for school teams, with three preliminary rounds and a final.",
-    description:
-      "Teams of two debate a new motion in each round. Judges score argument, rebuttal and clarity.\n\nAll participants receive a certificate of participation, and the final is open to observers.",
+    date: "2026-12-13",
+    dateEnd: "2026-12-14",
+    time: "To be announced",
+    venue: "To be announced",
+    address: "Venue details will be announced by the organisers.",
+    fee: "See segment-wise fee schedule",
+    capacity: null,
+    deadline: null,
+    eventStatus: "registration_setup",
+    summary: "A collegiate debate championship organised by the Bangla Version Boys and Bangla Version Girls debating wings of MPSC.",
+    description: "The Inter-Wing Collegiate Debate Championship will take place on 13â€“14 December 2026. Further details, including the venue, schedule, rules and registration instructions, will be published here.",
     rules: [
-      "Teams consist of two students from the same institution.",
-      "Each team must arrive 30 minutes before its first round.",
-      "Judges' decisions are final on the day.",
-      "Mobile phones must be switched off in debating rooms."
+      "The final event rules and eligibility criteria will be published before registration opens.",
+      "Participants must follow the official schedule and instructions issued by the organisers."
     ]
   },
-  {
-    id: "design-thinking-workshop",
-    title: "Design Thinking Workshop",
-    category: "Workshops",
-    featured: true,
-    date: "2027-01-23",
-    time: "10:00 – 13:00",
-    venue: "Sample Innovation Lab",
-    address: "Placeholder address, Sample City",
-    fee: "Free (sample)",
-    capacity: 40,
-    deadline: "2027-01-18",
-    summary: "A hands-on session on empathy, problem framing and rapid prototyping using paper and sticky notes.",
-    description:
-      "Participants work in small groups to understand a real-world problem from a user's point of view, then sketch and test a simple prototype.\n\nNo design experience is needed.",
-    rules: [
-      "Open to students aged 15 and above.",
-      "Bring a notebook and a pen. Materials are provided.",
-      "Groups are formed on arrival."
-    ]
-  },
-  {
-    id: "ai-in-education-talk",
-    title: "The Future of AI in Education",
-    category: "Talks",
-    featured: true,
-    date: "2027-02-06",
-    time: "18:00 – 19:30",
-    venue: "Sample Lecture Hall B",
-    address: "Placeholder address, Sample City",
-    fee: "Free (sample)",
-    capacity: 200,
-    deadline: "2027-02-01",
-    summary: "An evening talk on how learning tools are changing classrooms, with time for audience questions.",
-    description:
-      "A guest speaker (sample) explores opportunities and risks of AI tools in schools, with examples from teachers and students.\n\nThe talk is followed by a moderated Q&A.",
-    rules: [
-      "Open to teachers, parents and students.",
-      "Seating is first come, first served.",
-      "A recording may be shared later with consent."
-    ]
-  },
-  {
-    id: "science-fair-2027",
-    title: "Junior Science Fair 2027",
-    category: "Competitions",
-    featured: false,
-    date: "2027-02-20",
-    time: "08:30 – 16:00",
-    venue: "Sample Exhibition Center",
-    address: "Placeholder address, Sample City",
-    fee: "LKR-free (sample)",
-    capacity: 80,
-    deadline: "2027-02-10",
-    summary: "Student projects in biology, physics, chemistry and computing, judged by a panel of volunteers.",
-    description:
-      "Students present a project poster and a three-minute explanation to judges. Awards are given in each category.",
-    rules: [
-      "Individual or team entries of up to three students.",
-      "Projects must be original and safe for public display.",
-      "Posters must not exceed A1 size."
-    ]
-  },
-  {
-    id: "community-photo-walk",
-    title: "Community Photo Walk",
-    category: "Community",
-    featured: false,
-    date: "2027-03-06",
-    time: "07:00 – 09:00",
-    venue: "Meet at Sample Riverside Park",
-    address: "Placeholder meeting point",
-    fee: "Free (sample)",
-    capacity: 30,
-    deadline: "2027-03-01",
-    summary: "A relaxed early-morning walk to photograph light, people and everyday street life.",
-    description:
-      "Walk with fellow photographers at a comfortable pace. Experienced members share tips on composition and night-free exposure.\n\nPhones and simple cameras are welcome.",
-    rules: [
-      "Participants should wear comfortable shoes.",
-      "Respect people's privacy when photographing.",
-      "Walk is cancelled in heavy rain."
-    ]
-  },
-  {
-    id: "autumn-mentoring-session",
-    title: "Autumn Mentoring Session",
-    category: "Workshops",
-    featured: false,
-    date: "2026-11-21",
-    time: "15:00 – 17:00",
-    venue: "Sample Library Room 2",
-    address: "Placeholder address, Sample City",
-    fee: "Free (sample)",
-    capacity: 25,
-    deadline: "2026-10-30",
-    summary: "One-to-one mentoring on university applications and study planning. Registration has closed (sample).",
-    description:
-      "Mentors meet participants in short sessions to review goals and create a study plan.\n\nThis example shows how a closed registration appears on the site.",
-    rules: [
-      "Sessions are 20 minutes each.",
-      "Bring any draft documents you would like to discuss."
-    ]
-  }
+  ...[
+    ["design-thinking-workshop", "Design Thinking Workshop", "Workshops", "2027-01-23"],
+    ["ai-in-education-talk", "The Future of AI in Education", "Talks", "2027-02-06"],
+    ["science-fair-2027", "Junior Science Fair 2027", "Competitions", "2027-02-20"],
+    ["community-photo-walk", "Community Photo Walk", "Community", "2027-03-06"],
+    ["autumn-mentoring-session", "Autumn Mentoring Session", "Workshops", "2026-11-21"]
+  ].map(([id, title, category, date]) => ({
+    id, title, category, date, featured: false,
+    time: "To be announced",
+    venue: "To be announced",
+    address: "Details will be announced later.",
+    fee: "To be announced",
+    capacity: null,
+    deadline: null,
+    eventStatus: "under_construction",
+    summary: "This event page is being prepared. Details will be published later.",
+    description: "Information about this event is currently under construction.",
+    rules: []
+  }))
 ];
 
-// Announcements. Newest first is recommended, but the site sorts them by date automatically.
 const ANNOUNCEMENTS = [
   {
     id: "a1",
-    date: "2026-10-28",
-    tag: "Update",
-    title: "Early-bird registration is now open for the Debate Championship",
-    body: "Sample notice: teams registering before the deadline receive a reduced entry status and a welcome pack."
-  },
-  {
-    id: "a2",
-    date: "2026-10-20",
-    tag: "New",
-    title: "Digital ID design preview is now available",
-    body: "Sample notice: a design preview shows how verified participant IDs may work in a future release. No verification runs in this prototype."
-  },
-  {
-    id: "a3",
-    date: "2026-10-12",
-    tag: "Notice",
-    title: "Autumn Mentoring Session registration has closed",
-    body: "Sample notice: the registration deadline has passed. Please check the events page for upcoming sessions."
-  },
-  {
-    id: "a4",
-    date: "2026-09-30",
-    tag: "Announcement",
-    title: "Welcome to the EVENTORA prototype",
-    body: "Sample notice: this site demonstrates event discovery, filtering and a demo registration flow. All content is fictional."
+    date: "2026-11-07",
+    tag: "Event Update",
+    title: "The Inter-Wing Collegiate Debate Championship is scheduled for 13â€“14 December 2026",
+    body: "Event information and registration details will be published on EVENTORA as they are finalised."
   }
 ];
 
 
 /* ---------------------------------------------------------
-   PART 2 · APPLICATION CODE
+   PART 2 Â· APPLICATION CODE
    --------------------------------------------------------- */
 
 /* ----- Small helpers ----- */
@@ -224,18 +112,28 @@ function daysUntil(iso) {
 }
 
 // Returns the registration status text and whether registration is open.
-function deadlineStatus(ev) {
+function eventStatus(ev) {
+  if (ev.eventStatus === "under_construction") return { open: false, text: "Under Construction", label: "Under Construction" };
+  if (ev.eventStatus === "registration_setup") return { open: false, text: "Registration opening soon", label: "Registration opening soon" };
+  if (!ev.deadline) return { open: false, text: "Details to be announced", label: "Details to be announced" };
   const days = daysUntil(ev.deadline);
-  if (days < 0) return { open: false, text: "Registration closed" };
-  if (days === 0) return { open: true, text: "Closes today" };
-  if (days <= 7) return { open: true, text: `Closes in ${days} day${days === 1 ? "" : "s"}` };
-  return { open: true, text: `Closes ${formatDate(ev.deadline)}` };
+  if (days < 0) return { open: false, text: "Registration closed", label: "Registration closed" };
+  if (days === 0) return { open: true, text: "Closes today", label: "Registration open" };
+  if (days <= 7) return { open: true, text: `Closes in ${days} day${days === 1 ? "" : "s"}`, label: "Registration open" };
+  return { open: true, text: `Closes ${formatDate(ev.deadline)}`, label: "Registration open" };
+}
+
+function displayEventDate(ev) {
+  return ev.dateEnd
+    ? `${formatDate(ev.date, { day: "numeric", month: "short" })} â€“ ${formatDate(ev.dateEnd)}`
+    : formatDate(ev.date);
 }
 
 function registerButton(ev, className) {
-  const status = deadlineStatus(ev);
-  if (!status.open) {
-    return `<button class="${className}" type="button" disabled>Registration closed</button>`;
+  const status = eventStatus(ev);
+  if (ev.id !== ACTIVE_EVENT_ID || !status.open) {
+    const label = ev.eventStatus === "under_construction" ? "Under Construction" : "Registration opening soon";
+    return `<button class="${className}" type="button" disabled>${label}</button>`;
   }
   return `<a class="${className}" href="#register?event=${encodeURIComponent(ev.id)}">Register</a>`;
 }
@@ -271,16 +169,16 @@ let lastDemo = null; // Demo submission kept in memory only. Never stored or sen
 
 /* ----- Card and content templates ----- */
 function eventCard(ev) {
-  const status = deadlineStatus(ev);
+  const status = eventStatus(ev);
   const detailHref = `#event/${encodeURIComponent(ev.id)}`;
   return `
     <article class="card">
       <div class="card-media" data-cat="${escapeHtml(ev.category)}">
         <span>${escapeHtml(ev.category)}</span>
-        <em class="sample-badge">Sample</em>
+        <em class="sample-badge">${escapeHtml(status.label)}</em>
       </div>
       <div class="card-body">
-        <p class="card-meta">${escapeHtml(formatDate(ev.date))} · ${escapeHtml(ev.venue)}</p>
+        <p class="card-meta">${escapeHtml(displayEventDate(ev))} Â· ${escapeHtml(ev.venue)}</p>
         <h3><a href="${detailHref}">${escapeHtml(ev.title)}</a></h3>
         <p>${escapeHtml(ev.summary)}</p>
         <p class="status ${status.open ? "open" : "closed"}">${escapeHtml(status.text)}</p>
@@ -375,7 +273,7 @@ function renderDetail(id) {
     <a class="back-link text-link" href="#events">? Back to events</a>
     <article class="detail">
       <header class="detail-head">
-        <span class="sample-badge sample-tag">Sample event</span>
+        <span class="sample-badge sample-tag">${escapeHtml(status.label)}</span>
         <p class="eyebrow">${escapeHtml(ev.category)}</p>
         <h1>${escapeHtml(ev.title)}</h1>
         <p>${escapeHtml(ev.summary)}</p>
@@ -383,23 +281,22 @@ function renderDetail(id) {
 
       <div class="detail-body">
         <ul class="facts">
-          <li><span>Date</span><strong>${escapeHtml(formatDate(ev.date))}</strong></li>
+          <li><span>Date</span><strong>${escapeHtml(displayEventDate(ev))}</strong></li>
           <li><span>Time</span><strong>${escapeHtml(ev.time)}</strong></li>
           <li><span>Venue</span><strong>${escapeHtml(ev.venue)}</strong></li>
           <li><span>Fee</span><strong>${escapeHtml(ev.fee)}</strong></li>
-          <li><span>Capacity</span><strong>${ev.capacity} places</strong></li>
+          ${ev.capacity ? `<li><span>Capacity</span><strong>${ev.capacity} places</strong></li>` : ""}
         </ul>
 
         <div class="deadline-box">
-          <strong>Registration deadline:</strong> ${escapeHtml(formatDate(ev.deadline))}
+          <strong>Event status:</strong>
           <span class="status ${status.open ? "open" : "closed"}">${escapeHtml(status.text)}</span>
         </div>
 
         <h2>About this event</h2>
         ${paragraphs}
 
-        <h2>Rules &amp; eligibility</h2>
-        <ol class="rules">${rules}</ol>
+        ${rules ? `<h2>Rules &amp; eligibility</h2><ol class="rules">${rules}</ol>` : ""}
 
         <p class="note">Address: ${escapeHtml(ev.address)}</p>
 
@@ -418,21 +315,21 @@ const FIELD_RULES = {
     ? ""
     : "Please enter a valid email address, such as name@example.com."),
   institution: (el) => (el.value.trim() ? "" : "Please enter your school, college or organization."),
-  event: (el) => (el.value ? "" : "Please choose an event."),
+  event: (el) => (el.value === ACTIVE_EVENT_ID ? "" : "Only the Inter-Wing Collegiate Debate Championship is being prepared for registration."),
   consent: (el) => (el.checked ? "" : "Please confirm that you understand this is a demo.")
 };
 
 function populateEventOptions() {
   const options = EVENTS.map((ev) => {
-    const open = deadlineStatus(ev).open;
-    const label = open ? ev.title : `${ev.title} (registration closed)`;
+    const open = ev.id === ACTIVE_EVENT_ID && eventStatus(ev).open;
+    const label = ev.eventStatus === "under_construction" ? `${ev.title} (Under Construction)` : `${ev.title} (Registration opening soon)`;
     return `<option value="${escapeHtml(ev.id)}" ${open ? "" : "disabled"}>${escapeHtml(label)}</option>`;
   });
-  $("#fEvent").innerHTML = `<option value="">Choose an event…</option>${options.join("")}`;
+  $("#fEvent").innerHTML = `<option value="">Choose an eventâ€¦</option>${options.join("")}`;
 }
 
 function prepareRegister(eventId) {
-  if (eventId && EVENTS.some((e) => e.id === eventId)) {
+  if (eventId && eventId === ACTIVE_EVENT_ID) {
     $("#fEvent").value = eventId;
   }
   // Clear previous error messages when the page is opened.
@@ -495,7 +392,7 @@ function setupRegistrationForm() {
     formError.hidden = true;
 
     const eventId = $("#fEvent").value;
-    const ev = EVENTS.find((e2) => e2.id === eventId);
+    const ev = EVENTS.find((e2) => e2.id === eventId && e2.id === ACTIVE_EVENT_ID);
 
     // Demo only: stored in memory for this page view, not saved or sent anywhere.
     lastDemo = {
@@ -597,7 +494,7 @@ function render() {
   if (route.name === "success") renderSuccess();
   if (route.name === "share") renderShare();
 
-  document.title = `${ROUTE_TITLES[route.name]} · EVENTORA`;
+  document.title = `${ROUTE_TITLES[route.name]} Â· EVENTORA`;
   closeMenu();
   window.scrollTo(0, 0);
   $("#main").focus({ preventScroll: true });
