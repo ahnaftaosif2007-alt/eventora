@@ -308,46 +308,99 @@ function renderDetail(id) {
     </article>`;
 }
 
-/* ----- Registration form ----- */
-const FIELD_RULES = {
-  name: (el) => (el.value.trim().length >= 2 ? "" : "Please enter your full name (at least 2 characters)."),
-  email: (el) => (/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(el.value.trim())
-    ? ""
-    : "Please enter a valid email address, such as name@example.com."),
-  institution: (el) => (el.value.trim() ? "" : "Please enter your school, college or organization."),
-  event: (el) => (el.value === ACTIVE_EVENT_ID ? "" : "Only the Inter-Wing Collegiate Debate Championship is being prepared for registration."),
-  consent: (el) => (el.checked ? "" : "Please confirm that you understand this is a demo.")
+/* ----- Event-specific registration preview ----- */
+const SEGMENT_FEES = {
+  "AP Debate": { C: 1200 },
+  "Debate IQ Quiz": { A: 50, B: 70, C: 70 },
+  "Movie Quiz": { A: 50, B: 70, C: 70 },
+  "Mystery Case Challenge": { A: 140, B: 200, C: 200 },
+  "Creative Arguments": { A: 70, B: 100, C: 100 },
+  "This or That": { A: 70, B: 100, C: 100 },
+  "Extempore Speech": { A: 100, B: 150, C: 150 },
+  "Baroari Debate": { A: 100, B: 150, C: 150 }
 };
+const CLUB_VALUES = ["boys", "girls"];
 
 function populateEventOptions() {
-  const options = EVENTS.map((ev) => {
-    const open = ev.id === ACTIVE_EVENT_ID && eventStatus(ev).open;
-    const label = ev.eventStatus === "under_construction" ? `${ev.title} (Under Construction)` : `${ev.title} (Registration opening soon)`;
-    return `<option value="${escapeHtml(ev.id)}" ${open ? "" : "disabled"}>${escapeHtml(label)}</option>`;
-  });
-  $("#fEvent").innerHTML = `<option value="">Choose an event…</option>${options.join("")}`;
+  // Only the Inter-Wing Championship is being prepared for registration.
 }
 
-function prepareRegister(eventId) {
-  if (eventId && eventId === ACTIVE_EVENT_ID) {
-    $("#fEvent").value = eventId;
-  }
-  // Clear previous error messages when the page is opened.
-  $$("#registerForm .error").forEach((el) => { el.hidden = true; el.textContent = ""; });
-  $$("#registerForm [aria-invalid]").forEach((el) => el.removeAttribute("aria-invalid"));
+function prepareRegister() {
+  const form = $("#registerForm");
+  if (!form) return;
+  $("#formError").hidden = true;
+  $("#formError").textContent = "";
+  form.querySelectorAll("[aria-invalid]").forEach((el) => el.removeAttribute("aria-invalid"));
+  updateRegistrationFields();
 }
 
-function validateField(el) {
-  const rule = FIELD_RULES[el.name];
-  if (!rule) return true;
-  const message = rule(el);
-  const errorEl = document.getElementById("err-" + el.name);
-  el.setAttribute("aria-invalid", message ? "true" : "false");
-  if (errorEl) {
-    errorEl.textContent = message;
-    errorEl.hidden = !message;
+function setFieldsetActive(id, active) {
+  const fieldset = document.getElementById(id);
+  fieldset.hidden = !active;
+  fieldset.disabled = !active;
+}
+
+function updateRegistrationFields() {
+  const division = $("#fDivision").value;
+  const segment = $("#fSegment").value;
+  const apOption = Array.from($("#fSegment").options).find((option) => option.value === "AP Debate");
+  apOption.disabled = division !== "C";
+
+  if (segment === "AP Debate" && division !== "C") {
+    $("#fSegment").value = "";
   }
-  return !message;
+
+  const selected = $("#fSegment").value;
+  const isAP = selected === "AP Debate";
+  const isMystery = selected === "Mystery Case Challenge";
+  setFieldsetActive("apTeamFields", isAP);
+  setFieldsetActive("mysteryFields", isMystery);
+
+  if (isAP) {
+    $("#participantHeading").textContent = "Team contact · Member 1";
+    $("#participantHelp").textContent = "Enter the first member's details. Add the other two members below. AP Debate is available only in Division C.";
+  } else if (isMystery) {
+    $("#participantHeading").textContent = "Primary registrant";
+    $("#participantHelp").textContent = "Enter your details as the team's primary contact. Add only your teammate's name and club membership below.";
+  } else {
+    $("#participantHeading").textContent = "Participant details";
+    $("#participantHelp").textContent = "Solo segments accept one participant per registration. Register separately for each additional solo segment.";
+  }
+  updateFeePreview();
+}
+
+function roundTaka(amount) {
+  return Math.floor(amount + 0.5);
+}
+
+function updateFeePreview() {
+  const division = $("#fDivision").value;
+  const segment = $("#fSegment").value;
+  const feeLine = $("#feePreview");
+  if (!division || !segment) {
+    feeLine.textContent = "Choose a division and segment to see the fee.";
+    return;
+  }
+  const base = SEGMENT_FEES[segment]?.[division];
+  if (typeof base !== "number") {
+    feeLine.textContent = segment === "AP Debate"
+      ? "AP Debate is available only in Division C."
+      : "Fee information is not available for this selection.";
+    return;
+  }
+
+  const clubSelections = [$("#fClub").value];
+  if (segment === "AP Debate") {
+    clubSelections.push($("#fMember2Club").value, $("#fMember3Club").value);
+  } else if (segment === "Mystery Case Challenge") {
+    clubSelections.push($("#fMysteryMateClub").value);
+  }
+  const hasClubMember = clubSelections.some((value) => CLUB_VALUES.includes(value));
+  const discounted = hasClubMember ? roundTaka(base * 0.85) : base;
+  const unit = segment === "AP Debate" || segment === "Mystery Case Challenge" ? "per team" : "per participant";
+  feeLine.textContent = hasClubMember
+    ? `৳${base.toLocaleString("en-BD")} ${unit} · Club Member fee: ৳${discounted.toLocaleString("en-BD")}`
+    : `৳${base.toLocaleString("en-BD")} ${unit}`;
 }
 
 function makeReference() {
@@ -356,54 +409,52 @@ function makeReference() {
 
 function setupRegistrationForm() {
   const form = $("#registerForm");
+  if (!form) return;
 
-  // Validate a field when the user leaves it.
-  form.addEventListener("blur", (e) => {
-    if (FIELD_RULES[e.target.name]) validateField(e.target);
-  }, true);
-
-  // Update the message while typing once a field is already marked invalid.
-  form.addEventListener("input", (e) => {
-    if (e.target.getAttribute("aria-invalid") === "true") validateField(e.target);
-  });
   form.addEventListener("change", (e) => {
-    if (e.target.getAttribute("aria-invalid") === "true") validateField(e.target);
+    if (["division", "segment", "club", "member2Club", "member3Club", "mysteryMateClub"].includes(e.target.name)) {
+      updateRegistrationFields();
+    }
   });
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const formError = $("#formError");
+    formError.hidden = true;
 
-    let firstInvalid = null;
-    Array.from(form.elements)
-      .filter((el) => FIELD_RULES[el.name])
-      .forEach((el) => {
-        const ok = validateField(el);
-        if (!ok && !firstInvalid) firstInvalid = el;
-      });
+    const invalid = Array.from(form.elements).find((el) =>
+      el.willValidate && !el.checkValidity()
+    );
+    const division = $("#fDivision");
+    const segment = $("#fSegment");
+    if (segment.value === "AP Debate" && division.value !== "C") {
+      division.setCustomValidity("AP Debate is available only in Division C.");
+    } else {
+      division.setCustomValidity("");
+    }
+
+    const firstInvalid = Array.from(form.elements).find((el) =>
+      el.willValidate && !el.checkValidity()
+    ) || invalid;
 
     if (firstInvalid) {
-      formError.textContent = "Please fix the highlighted fields to continue.";
+      firstInvalid.setAttribute("aria-invalid", "true");
+      formError.textContent = firstInvalid.validationMessage || "Please complete the highlighted fields.";
       formError.hidden = false;
       firstInvalid.focus();
       return;
     }
 
-    formError.hidden = true;
-
-    const eventId = $("#fEvent").value;
-    const ev = EVENTS.find((e2) => e2.id === eventId && e2.id === ACTIVE_EVENT_ID);
-
-    // Demo only: stored in memory for this page view, not saved or sent anywhere.
+    const event = EVENTS.find((item) => item.id === ACTIVE_EVENT_ID);
     lastDemo = {
       name: $("#fName").value.trim(),
-      eventTitle: ev ? ev.title : "Sample event",
-      eventDate: ev ? formatDate(ev.date) : "",
+      eventTitle: event ? event.title : "The Inter-Wing Collegiate Debate Championship",
+      eventDate: event ? formatDate(event.date) : "13–14 December 2026",
       ref: makeReference()
     };
 
     form.reset();
-    prepareRegister("");
+    prepareRegister();
     location.hash = "#success";
   });
 }
