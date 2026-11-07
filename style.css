@@ -1056,3 +1056,71 @@ input:focus, select:focus, textarea:focus {
   .member-card { padding: 16px; }
   .price-preview { padding: 18px; }
 }
+
+
+/* ---------- Multi-segment registration and live fee summary ---------- */
+.segment-picker { margin-top: 4px; }
+.segment-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.segment-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  min-width: 0;
+  padding: 13px 14px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: #fff;
+  cursor: pointer;
+}
+.segment-option:has(input:checked) {
+  border-color: var(--gold);
+  background: var(--gold-pale);
+}
+.segment-option input {
+  width: 18px;
+  min-height: 18px;
+  flex: 0 0 18px;
+  margin: 2px 0 0;
+  padding: 0;
+  accent-color: var(--navy-800);
+}
+.segment-option span { display: grid; gap: 3px; }
+.segment-option strong { color: var(--navy-900); font-size: .93rem; }
+.segment-option small { color: var(--muted); font-size: .8rem; }
+.segment-option input:disabled + span { opacity: .45; }
+.fee-breakdown { display: grid; gap: 10px; }
+.fee-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3px 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,.14);
+  color: rgba(255,255,255,.9);
+}
+.fee-row strong { color: #fff; }
+.fee-row small { grid-column: 1 / -1; color: var(--gold-soft); }
+.fee-row .fee-payable { grid-column: 2; grid-row: 1; }
+.fee-total-row, .fee-grand-total {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: rgba(255,255,255,.86);
+}
+.fee-savings { color: var(--gold-soft); }
+.fee-grand-total {
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,.3);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.12rem;
+}
+.fee-grand-total strong { color: var(--gold-soft); font-size: 1.35rem; }
+@media (max-width: 640px) {
+  .segment-options { grid-template-columns: 1fr; }
+}
