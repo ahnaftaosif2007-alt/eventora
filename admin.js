@@ -2,7 +2,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const config = window.EVENTORA_SUPABASE;
 const $ = (selector) => document.querySelector(selector);
 const loginPanel = $("#loginPanel"), dashboard = $("#dashboard"), message = $("#message");
-let supabase = null, records = [];
+let supabase = null, records = [], currentRole = null;
 
 function showMessage(text, type = "") {
   message.textContent = text;
@@ -177,7 +177,7 @@ async function init() {
   $("#refresh").addEventListener("click", loadRegistrations);
   $("#search").addEventListener("input", renderRows);
   $("#statusFilter").addEventListener("change", renderRows);
-  $("#registrationRows").addEventListener("click", handleTableClick);
+  $("#registrationRows").addEventListener("click", handleTableClick);\n  $("#staffRoleForm")?.addEventListener("submit", saveStaffRole);
   supabase.auth.onAuthStateChange((_event, session) => { if (!session) showLoggedOut(); });
   try { await guardSession(); }
   catch (error) { showLoggedOut(); showMessage(error.message || "Could not verify this session.", "error"); }
