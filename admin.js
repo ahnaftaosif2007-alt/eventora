@@ -240,7 +240,8 @@ async function init() {
   supabase = createClient(config.url, config.publishableKey, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
   });
-  $("#loginForm").addEventListener("submit", handleLogin);\n  $("#forgotPassword")?.addEventListener("click", handlePasswordRecovery);
+  $("#loginForm").addEventListener("submit", handleLogin);
+  $("#forgotPassword")?.addEventListener("click", handlePasswordRecovery);
   $("#signOut").addEventListener("click", async () => {
     await supabase.auth.signOut();
     showLoggedOut();
