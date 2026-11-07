@@ -262,7 +262,7 @@ function renderDetail(id) {
     return;
   }
 
-  const status = deadlineStatus(ev);
+  const status = eventStatus(ev);
   const paragraphs = ev.description
     .split(/\n\s*\n/)
     .map((p) => `<p>${escapeHtml(p.trim())}</p>`)
