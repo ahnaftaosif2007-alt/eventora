@@ -388,13 +388,14 @@ function updateFeePreview() {
   const division = $("#fDivision").value;
   const selected = selectedSegments();
   const breakdown = $("#feeBreakdown");
+  const rowsBox = $("#feeRows");
   const feeLine = $("#feePreview");
 
   if (!division || selected.length === 0) {
     feeLine.textContent = !division
       ? "Choose a division and at least one segment to see your total."
       : "Choose at least one segment to see your total.";
-    breakdown.querySelectorAll(".fee-row, .fee-total-row").forEach((node) => node.remove());
+    rowsBox.innerHTML = "";
     return;
   }
 
@@ -441,7 +442,7 @@ function updateFeePreview() {
       <strong class="fee-payable">${formatTaka(row.payable)}</strong>
     </div>`).join("");
 
-  breakdown.innerHTML = `
+  rowsBox.innerHTML = `
     <p class="price-line">${rows.length} selected segment${rows.length === 1 ? "" : "s"}</p>
     ${rowsHtml}
     <div class="fee-total-row"><span>Subtotal</span><strong>${formatTaka(subtotal)}</strong></div>
