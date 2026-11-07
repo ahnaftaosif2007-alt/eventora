@@ -13,6 +13,7 @@ Only the Project URL and publishable key belong in the browser. Never place a Se
 1. Open SQL Editor → New query.
 2. Copy the complete contents of `supabase/schema.sql` into the editor and click Run.
 3. Confirm that `events`, `registrations` and `eventora_admins` were created.
+4. Run the complete contents of `supabase/pricing_early_bird_migration.sql` as a second query. It creates the pricing tables and Early Bird settings.
 
 RLS is enabled. Registration rows are not publicly readable or writable. The existing public registration form remains a demo until a controlled submission endpoint is added.
 
@@ -42,10 +43,17 @@ Open `admin.html` on the deployed site and sign in with the administrator accoun
 
 To test the table, add a sample row through the Supabase Table Editor. Do not use real participant data for testing.
 
+## Pricing and Early Bird setup
+
+The pricing values are seeded by `supabase/pricing_early_bird_migration.sql`. In the dashboard, the Early Bird deadline can be changed or cleared at any time. The date/time is interpreted in the admin browser's local timezone and stored as a timestamp. The current public registration form does not yet calculate or collect these fees; the migration provides the secured settings and fee schedule for the next registration-flow implementation.
+
 ## Current scope
 - Admin sign-in and session persistence: implemented.
 - Admin allow-list and database-side RLS: implemented in the SQL setup.
 - Registration list, search, status filters and status updates: implemented.
+- Pricing schedule and Early Bird deadline controls in the admin dashboard: implemented in this branch; the SQL migration must be run before they can load.
+- Discount rules: 15% club-member discount or 20% Early Bird discount (Early Bird replaces the member discount; they do not stack). Membership fee is ৳100 and is separate from segment fees.
+- The Early Bird deadline is admin-only; the public-facing status function returns only active/inactive, not the date.
 - Event editing, password reset, audit history and exports: not yet implemented.
 - Public registration writes: deliberately disabled until a protected intake flow is built.
 
