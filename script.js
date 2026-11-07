@@ -31,8 +31,8 @@ const EVENTS = [
     date: "2026-12-13",
     dateEnd: "2026-12-14",
     time: "To be announced",
-    venue: "To be announced",
-    address: "Venue details will be announced by the organisers.",
+    venue: "MPSC Boys’ Wing campus · specific venue to be confirmed",
+    address: "Mohammadpur Preparatory School & College, Boys’ Wing campus. The exact hall/room will be confirmed by the organisers.",
     fee: "See segment-wise fee schedule",
     capacity: null,
     deadline: null,
@@ -204,9 +204,66 @@ function announcementItem(a) {
 
 /* ----- Home page ----- */
 function renderHome() {
-  const featured = EVENTS.filter((ev) => ev.featured).slice(0, 3);
-  $("#featuredGrid").innerHTML = featured.map(eventCard).join("");
+  renderHomeEventPreview();
   $("#homeAnnouncements").innerHTML = sortedAnnouncements().slice(0, 2).map(announcementItem).join("");
+}
+
+function renderHomeEventPreview() {
+  const ev = EVENTS.find((item) => item.id === ACTIVE_EVENT_ID);
+  const host = $("#homeEventPreview");
+  if (!ev || !host) return;
+
+  const segmentRows = [
+    ["AP Debate", "Team of 3 · Division C", "৳1,200 / team"],
+    ["Debate IQ Quiz", "Solo · Divisions A, B & C", "৳50 / ৳70 / ৳70"],
+    ["Movie Quiz", "Solo · Divisions A, B & C", "৳50 / ৳70 / ৳70"],
+    ["Mystery Case Challenge", "Team of 2 · Divisions A, B & C", "৳140 / ৳200 / ৳200"],
+    ["Creative Arguments", "Solo · Divisions A, B & C", "৳70 / ৳100 / ৳100"],
+    ["This or That", "Solo · Divisions A, B & C", "৳70 / ৳100 / ৳100"],
+    ["Extempore Speech", "Solo · Divisions A, B & C", "৳100 / ৳150 / ৳150"],
+    ["Baroari Debate", "Solo · Divisions A, B & C", "৳100 / ৳150 / ৳150"]
+  ];
+  const segmentHtml = segmentRows.map(([name, format, fee]) => `
+    <li class="home-segment-row">
+      <span class="home-segment-name">${escapeHtml(name)}<small>${escapeHtml(format)}</small></span>
+      <strong>${escapeHtml(fee)}</strong>
+    </li>`).join("");
+
+  host.innerHTML = `
+    <article class="home-event-panel">
+      <div class="home-event-main">
+        <div class="home-event-topline">
+          <span class="home-event-label">FEATURED EVENT</span>
+          <span class="home-event-status">Registration setup in progress</span>
+        </div>
+        <h3>${escapeHtml(ev.title)}</h3>
+        <p class="home-event-intro">A two-day collegiate competition bringing together participants for debate, quizzes and creative challenges.</p>
+        <div class="home-event-facts">
+          <div><span class="fact-icon" aria-hidden="true">▦</span><span><small>DATE</small><strong>13–14 December 2026</strong></span></div>
+          <div><span class="fact-icon" aria-hidden="true">⌖</span><span><small>VENUE</small><strong>MPSC Boys’ Wing campus</strong><em>Exact hall / room to be confirmed</em></span></div>
+          <div><span class="fact-icon" aria-hidden="true">৳</span><span><small>FEES</small><strong>৳50–৳1,200</strong><em>Depends on segment and division</em></span></div>
+        </div>
+        <div class="home-event-howto">
+          <strong>How to participate</strong>
+          <ol>
+            <li>Choose your division: A (Class 5–7), B (Class 8–10) or C (Class 11–12).</li>
+            <li>Select one or more segments and check your combined fee.</li>
+            <li>Complete the participant / team details in the registration form.</li>
+          </ol>
+        </div>
+        <div class="home-event-discount"><strong>Discounts:</strong> 15% Club Member Discount when eligible. A 20% Early Bird Discount may apply instead; discounts do not stack.</div>
+        <div class="home-event-actions">
+          <a class="btn btn-gold" href="#register">Explore segments &amp; register</a>
+          <a class="btn btn-ghost" href="#event/${encodeURIComponent(ev.id)}">Full event information</a>
+        </div>
+        <p class="home-event-note">Fees shown are the base registration fees before any applicable discount. Registration is currently a preview and does not submit or store entries.</p>
+      </div>
+      <aside class="home-segment-list">
+        <div class="home-segment-heading"><span>SEGMENT GUIDE</span><small>Base fee by division</small></div>
+        <ul>${segmentHtml}</ul>
+        <p class="home-segment-key">For division-based fees, amounts are shown in A / B / C order. AP Debate is available only in Division C.</p>
+      </aside>
+    </article>`;
 }
 
 function sortedAnnouncements() {
