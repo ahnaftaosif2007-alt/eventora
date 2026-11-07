@@ -54,12 +54,15 @@ The pricing values are seeded by `supabase/pricing_early_bird_migration.sql`. In
 
 ## Current scope
 - Admin sign-in and session persistence: implemented.
-- Admin allow-list and database-side RLS: implemented in the SQL setup.
+- Role-based access: Main Admin, up to two Payment Verifiers and up to three General Staff; run `supabase/role_based_access_v1.sql` to activate the database rules.
+- Main Admin-only participant status changes, pricing controls and staff role assignment are enforced by database RLS / RPC checks.
+- Staff role assignments are recorded in `eventora_role_audit`.
 - Registration list, search, status filters and status updates: implemented.
 - Pricing schedule and Early Bird deadline controls in the admin dashboard: implemented in this branch; the SQL migration must be run before they can load.
 - Discount rules: 15% club-member discount or 20% Early Bird discount (Early Bird replaces the member discount; they do not stack). Membership fee is ৳100 and is separate from segment fees.
 - The Early Bird deadline is admin-only; the public-facing status function returns only active/inactive, not the date.
-- Event editing, password reset, audit history and exports: not yet implemented.
+- Event editing, password reset, full participant-action audit history and exports: not yet implemented.
+- Payment screenshot upload and review UI: not yet implemented. The Payment Verifier role and permission check are prepared, but no payment can be approved from the dashboard until the secure screenshot workflow is built and tested.
 - Public registration writes: only through the validating `submit_eventora_registration(jsonb)` RPC; direct anonymous table inserts remain disabled. The website form still needs its client integration and end-to-end testing before real registrations.
 
 Supabase Auth issues the session JWT. The Supabase client automatically attaches the user's access token to database requests; the application does not manually embed or handle access tokens.
