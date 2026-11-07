@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="EVENTORA is an event discovery and management prototype. Browse sample events, read rules and deadlines, and explore the registration design.">
+  <meta name="description" content="EVENTORA event portal. Explore The Inter-Wing Collegiate Debate Championship, scheduled for 13–14 December 2026.">
   <meta name="theme-color" content="#0a1d3b">
   <title>EVENTORA · Event Discovery &amp; Management</title>
   <link rel="stylesheet" href="style.css">
@@ -41,7 +41,7 @@
   </header>
 
   <div class="demo-banner" role="note">
-    Prototype demo. All events are sample content. Registration here is not submitted or stored anywhere.
+    EVENTORA event portal. The Inter-Wing Collegiate Debate Championship is scheduled for 13–14 December 2026. Registration setup is in progress; other event listings are under construction.
   </div>
 
   <main id="main" tabindex="-1">
@@ -96,7 +96,7 @@
       <div class="container page-head">
         <p class="eyebrow">Explore</p>
         <h1>Events</h1>
-        <p>Search, filter and sort the sample events. Select any event to see its dates, venue, rules and deadline.</p>
+        <p>Explore the Inter-Wing Collegiate Debate Championship and see which other EVENTORA listings are under construction.</p>
       </div>
 
       <div class="container section-tight">
@@ -137,56 +137,133 @@
     <!-- ============ REGISTER ============ -->
     <section class="view" data-view="register" id="view-register" hidden>
       <div class="container narrow page-head">
-        <p class="eyebrow">Demo form</p>
-        <h1>Register for an event</h1>
+        <p class="eyebrow">Registration preview</p>
+        <h1>Inter-Wing Collegiate Debate Championship</h1>
         <p class="note">
-          This is a prototype. Submitting shows a demo confirmation only. Your details are not sent to an
-          organizer, not stored, and not verified.
+          Registration is not open yet. This is a form preview only: submissions are not sent to the organisers,
+          stored, or treated as actual registrations.
         </p>
+        <p class="event-date-line"><strong>13–14 December 2026</strong> · Venue and schedule to be announced</p>
       </div>
 
       <div class="container narrow section-tight">
         <form class="form" id="registerForm" novalidate>
           <div class="field">
-            <label for="fName">Full name <span class="req" aria-hidden="true">*</span></label>
-            <input id="fName" name="name" type="text" autocomplete="name" required
-                   aria-describedby="err-name">
-            <p class="error" id="err-name" hidden></p>
+            <label for="fDivision">Division <span class="req" aria-hidden="true">*</span></label>
+            <select id="fDivision" name="division" required>
+              <option value="">Choose division…</option>
+              <option value="A">Division A · Class 5–7</option>
+              <option value="B">Division B · Class 8–10</option>
+              <option value="C">Division C · Class 11–12</option>
+            </select>
           </div>
 
-          <div class="field">
-            <label for="fEmail">Email address <span class="req" aria-hidden="true">*</span></label>
-            <input id="fEmail" name="email" type="email" autocomplete="email" required
-                   aria-describedby="err-email">
-            <p class="error" id="err-email" hidden></p>
+          <fieldset class="form-section segment-picker">
+            <legend>Choose your segments <span class="req" aria-hidden="true">*</span></legend>
+            <p class="section-help">Select one or more segments. The total fee and applicable discount will update automatically.</p>
+            <div class="segment-options">
+              <label class="segment-option"><input type="checkbox" name="segments" value="AP Debate"><span><strong>AP Debate</strong><small>Team of 3 · Division C only</small></span></label>
+              <label class="segment-option"><input type="checkbox" name="segments" value="Debate IQ Quiz"><span><strong>Debate IQ Quiz</strong><small>Solo</small></span></label>
+              <label class="segment-option"><input type="checkbox" name="segments" value="Movie Quiz"><span><strong>Movie Quiz</strong><small>Solo</small></span></label>
+              <label class="segment-option"><input type="checkbox" name="segments" value="Mystery Case Challenge"><span><strong>Mystery Case Challenge</strong><small>Team of 2</small></span></label>
+              <label class="segment-option"><input type="checkbox" name="segments" value="Creative Arguments"><span><strong>Creative Arguments</strong><small>Solo</small></span></label>
+              <label class="segment-option"><input type="checkbox" name="segments" value="This or That"><span><strong>This or That</strong><small>Solo</small></span></label>
+              <label class="segment-option"><input type="checkbox" name="segments" value="Extempore Speech"><span><strong>Extempore Speech</strong><small>Solo</small></span></label>
+              <label class="segment-option"><input type="checkbox" name="segments" value="Baroari Debate"><span><strong>Baroari Debate</strong><small>Solo</small></span></label>
+            </div>
+          </fieldset>
+
+          <div class="form-section">
+            <h2 id="participantHeading">Participant details</h2>
+            <p class="section-help" id="participantHelp">Enter the primary participant's details. These details apply to all selected solo segments.</p>
+            <div class="field">
+              <label for="fName">Full name <span class="req" aria-hidden="true">*</span></label>
+              <input id="fName" name="name" type="text" autocomplete="name" minlength="2" required>
+            </div>
+            <div class="field">
+              <label for="fEmail">Contact email <span class="req" aria-hidden="true">*</span></label>
+              <input id="fEmail" name="email" type="email" autocomplete="email" required>
+            </div>
+            <div class="field">
+              <label for="fInstitution">School / College <span class="req" aria-hidden="true">*</span></label>
+              <input id="fInstitution" name="institution" type="text" autocomplete="organization" required>
+            </div>
+            <div class="field">
+              <label for="fClub">Club membership <span class="req" aria-hidden="true">*</span></label>
+              <select id="fClub" name="club" required>
+                <option value="none">Not a member</option>
+                <option value="boys">Preparatorian Debating Club (Boys’ Wing)</option>
+                <option value="girls">MPSC Debate Club (Girls’ Wing)</option>
+              </select>
+            </div>
           </div>
 
-          <div class="field">
-            <label for="fInstitution">School, college or organization <span class="req" aria-hidden="true">*</span></label>
-            <input id="fInstitution" name="institution" type="text" autocomplete="organization" required
-                   aria-describedby="err-institution">
-            <p class="error" id="err-institution" hidden></p>
-          </div>
+          <fieldset class="form-section member-fieldset" id="apTeamFields" hidden disabled>
+            <legend>AP Debate team details</legend>
+            <div class="field">
+              <label for="fTeamName">Team name <span class="req" aria-hidden="true">*</span></label>
+              <input id="fTeamName" name="teamName" type="text" required>
+            </div>
+            <p class="section-help">Add the other two team members. Their names, institution and club membership are required; only the team contact needs to provide an email.</p>
+            <div class="member-card">
+              <h3>Team member 2</h3>
+              <div class="field"><label for="fMember2">Full name *</label><input id="fMember2" name="member2" type="text" minlength="2" required></div>
+              <div class="field"><label for="fMember2Institution">School / College *</label><input id="fMember2Institution" name="member2Institution" type="text" required></div>
+              <div class="field"><label for="fMember2Club">Club membership *</label>
+                <select id="fMember2Club" name="member2Club" required>
+                  <option value="none">Not a member</option>
+                  <option value="boys">Preparatorian Debating Club (Boys’ Wing)</option>
+                  <option value="girls">MPSC Debate Club (Girls’ Wing)</option>
+                </select>
+              </div>
+            </div>
+            <div class="member-card">
+              <h3>Team member 3</h3>
+              <div class="field"><label for="fMember3">Full name *</label><input id="fMember3" name="member3" type="text" minlength="2" required></div>
+              <div class="field"><label for="fMember3Institution">School / College *</label><input id="fMember3Institution" name="member3Institution" type="text" required></div>
+              <div class="field"><label for="fMember3Club">Club membership *</label>
+                <select id="fMember3Club" name="member3Club" required>
+                  <option value="none">Not a member</option>
+                  <option value="boys">Preparatorian Debating Club (Boys’ Wing)</option>
+                  <option value="girls">MPSC Debate Club (Girls’ Wing)</option>
+                </select>
+              </div>
+            </div>
+          </fieldset>
 
-          <div class="field">
-            <label for="fEvent">Event <span class="req" aria-hidden="true">*</span></label>
-            <select id="fEvent" name="event" required aria-describedby="err-event"></select>
-            <p class="error" id="err-event" hidden></p>
+          <fieldset class="form-section member-fieldset" id="mysteryFields" hidden disabled>
+            <legend>Mystery Case teammate</legend>
+            <p class="section-help">Only the teammate's name and club membership are needed. No email or other personal details are required.</p>
+            <div class="field">
+              <label for="fMysteryMate">Teammate's full name <span class="req" aria-hidden="true">*</span></label>
+              <input id="fMysteryMate" name="mysteryMate" type="text" minlength="2" required>
+            </div>
+            <div class="field">
+              <label for="fMysteryMateClub">Teammate's club membership <span class="req" aria-hidden="true">*</span></label>
+              <select id="fMysteryMateClub" name="mysteryMateClub" required>
+                <option value="none">Not a member</option>
+                <option value="boys">Preparatorian Debating Club (Boys’ Wing)</option>
+                <option value="girls">MPSC Debate Club (Girls’ Wing)</option>
+              </select>
+            </div>
+          </fieldset>
+
+          <div class="price-preview" aria-live="polite">
+            <p class="eyebrow">Live fee breakdown</p>
+            <div id="feeBreakdown" class="fee-breakdown"><p class="price-line" id="feePreview">Choose a division and at least one segment to see your total.</p><div id="feeRows"></div></div>
+            <p class="section-help" id="discountPreview">A 15% Club Member Discount applies when at least one relevant participant belongs to either listed club. When Early Bird is active, the 20% Early Bird Discount replaces the club discount; discounts never stack.</p>
           </div>
 
           <div class="field">
             <label class="checkbox" for="fConsent">
-              <input id="fConsent" name="consent" type="checkbox" required aria-describedby="err-consent">
-              <span>I understand this is a demo and that my details are not submitted or stored.
-                <span class="req" aria-hidden="true">*</span></span>
+              <input id="fConsent" name="consent" type="checkbox" required>
+              <span>I understand this is a preview only and my details will not be submitted or stored. <span class="req" aria-hidden="true">*</span></span>
             </label>
-            <p class="error" id="err-consent" hidden></p>
           </div>
 
           <p class="error" id="formError" role="alert" hidden></p>
-
           <div class="form-actions">
-            <button type="submit" class="btn btn-gold">Submit demo registration</button>
+            <button type="submit" class="btn btn-gold">Preview demo submission</button>
           </div>
         </form>
       </div>
@@ -204,6 +281,8 @@
           <p><strong>Reference:</strong> <span id="successRef"></span></p>
           <p><strong>Event:</strong> <span id="successEvent"></span></p>
           <p><strong>Event date:</strong> <span id="successDate"></span></p>
+          <p><strong>Selected segments:</strong> <span id="successSegments"></span></p>
+          <p><strong>Fee preview:</strong> <span id="successFee"></span></p>
         </div>
 
         <p class="note">

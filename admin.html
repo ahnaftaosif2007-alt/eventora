@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Restricted EVENTORA organizer dashboard.">
+  <meta name="theme-color" content="#0a1d3b">
+  <title>Organizer Dashboard · EVENTORA</title>
+  <link rel="stylesheet" href="admin.css">
+  <script src="config.js"></script>
+  <script type="module" src="admin.js"></script>
+  <script type="module" src="admin-pricing.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="index.html"><span class="mark">E</span><span>EVENTORA</span></a>
+    <span class="top-label">ORGANIZER CONSOLE</span>
+    <a class="back-link" href="index.html">Public website ↗</a>
+  </header>
+  <main class="shell">
+    <section class="intro">
+      <p class="eyebrow">PRIVATE WORKSPACE</p>
+      <h1>Organizer dashboard</h1>
+      <p>Manage event registrations from one secure workspace.</p>
+    </section>
+    <div id="configNotice" class="notice warning" hidden>
+      Supabase is not configured yet. Follow <a href="ADMIN_SETUP.md">the setup guide</a>, then add your project URL and publishable key in <code>config.js</code>.
+    </div>
+    <div id="message" class="notice" role="status" aria-live="polite" hidden></div>
+    <section id="loginPanel" class="panel login-panel">
+      <div>
+        <p class="eyebrow">AUTHENTICATED ACCESS</p>
+        <h2>Sign in</h2>
+        <p class="muted">Only accounts explicitly added to the EVENTORA administrator list can open this dashboard.</p>
+      </div>
+      <form id="loginForm" class="form">
+        <label>Email address<input id="email" type="email" autocomplete="username" required></label>
+        <label>Password<input id="password" type="password" autocomplete="current-password" required></label>
+        <button class="button primary" type="submit">Sign in securely</button>
+      </form>
+    </section>
+    <section id="dashboard" hidden>
+      <div class="dashboard-head">
+        <div><p class="eyebrow">OVERVIEW</p><h2>Registrations</h2><p id="signedInAs" class="muted"></p></div>
+        <button id="signOut" class="button secondary" type="button">Sign out</button>
+      </div>
+      <div class="stats">
+        <article class="stat"><span>Total</span><strong id="totalCount">—</strong></article>
+        <article class="stat"><span>Pending</span><strong id="pendingCount">—</strong></article>
+        <article class="stat"><span>Approved</span><strong id="approvedCount">—</strong></article>
+        <article class="stat"><span>Rejected</span><strong id="rejectedCount">—</strong></article>
+      </div>
+      <section id="pricingPanel" class="panel pricing-panel" hidden>
+        <div class="table-head">
+          <div><p class="eyebrow">EVENT SETTINGS</p><h3>Pricing & Early Bird</h3><p class="muted">Set or clear the Early Bird deadline. The public website will not display the date.</p></div>
+          <span id="earlyBirdStatus" class="status-value inactive">Inactive</span>
+        </div>
+        <div class="pricing-facts">
+          <article><span>Club member discount</span><strong id="memberDiscount">15%</strong></article>
+          <article><span>Early Bird discount</span><strong id="earlyBirdDiscount">20%</strong></article>
+          <article><span>Membership fee</span><strong id="membershipFee">৳100</strong></article>
+        </div>
+        <form id="earlyBirdForm" class="deadline-form">
+          <label for="earlyBirdDeadline">Early Bird deadline (your local time)</label>
+          <div class="deadline-controls">
+            <input id="earlyBirdDeadline" type="datetime-local" required>
+            <button id="savePricing" class="button primary" type="submit">Save deadline</button>
+            <button id="clearEarlyBird" class="button secondary" type="button">Clear deadline</button>
+          </div>
+        </form>
+        <div id="pricingMessage" class="notice" role="status" aria-live="polite" hidden></div>
+        <div class="table-head price-table-head"><div><h3>Segment fee schedule</h3><p class="muted">Current base fees, before any eligible discount. Membership fee is separate.</p></div></div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Segment</th><th>Division</th><th>Base fee</th></tr></thead><tbody id="priceRows"><tr><td colspan="3" class="empty">Loading prices…</td></tr></tbody></table>
+        </div>
+        <p class="muted pricing-note">Early Bird replaces the club-member discount; the two discounts do not stack. AP Debate is available only in Division C.</p>
+      </section>
+      <section class="panel">
+        <div class="table-head">
+          <div><h3>Participant records</h3><p class="muted">Only records permitted by the database security policies appear here.</p></div>
+          <button id="refresh" class="button secondary" type="button">Refresh</button>
+        </div>
+        <div class="filters">
+          <input id="search" type="search" placeholder="Search name, email, institution or reference">
+          <select id="statusFilter" aria-label="Filter by status">
+            <option value="all">All statuses</option><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Reference</th><th>Participant</th><th>Event</th><th>Institution</th><th>Submitted</th><th>Status</th><th>Update</th></tr></thead>
+            <tbody id="registrationRows"><tr><td colspan="7" class="empty">Loading records…</td></tr></tbody>
+          </table>
+        </div>
+        <p id="recordCount" class="muted table-foot"></p>
+      </section>
+    </section>
+    <footer>EVENTORA · Restricted organizer access · Keep your account credentials private.</footer>
+  </main>
+</body>
+</html>
