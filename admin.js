@@ -229,7 +229,7 @@ async function init() {
   $("#search").addEventListener("input", renderRows);
   $("#statusFilter").addEventListener("change", renderRows);
   $("#registrationRows").addEventListener("click", handleTableClick);
-  $("#staffRoleForm")?.addEventListener("submit", saveStaffRole);\n  $("#staffRoleForm")?.addEventListener("submit", saveStaffRole);
+  $("#staffRoleForm")?.addEventListener("submit", saveStaffRole);
   supabase.auth.onAuthStateChange((_event, session) => { if (!session) showLoggedOut(); });
   try { await guardSession(); }
   catch (error) { showLoggedOut(); showMessage(error.message || "Could not verify this session.", "error"); }
