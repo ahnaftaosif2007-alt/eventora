@@ -1,9 +1,9 @@
 /* =========================================================
-   EVENTORA · style.css
+   EVENTORA Â· style.css
    Navy, warm gold and white identity.
-   Sections: 1 Tokens · 2 Base · 3 Layout · 4 Header & nav
-             5 Hero · 6 Buttons · 7 Cards & filters · 8 Details
-             9 Forms · 10 Pages · 11 Footer · 12 Responsive
+   Sections: 1 Tokens Â· 2 Base Â· 3 Layout Â· 4 Header & nav
+             5 Hero Â· 6 Buttons Â· 7 Cards & filters Â· 8 Details
+             9 Forms Â· 10 Pages Â· 11 Footer Â· 12 Responsive
    ========================================================= */
 
 /* ---------- 1. Design tokens (edit colors here) ---------- */
@@ -993,4 +993,66 @@ input:focus, select:focus, textarea:focus {
     transition: none !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ---------- Registration preview: segment and team layouts ---------- */
+.event-date-line { color: var(--muted); margin-top: 14px; }
+.form-section {
+  border: 0;
+  border-top: 1px solid var(--line);
+  padding: 22px 0 0;
+  margin: 0;
+  min-width: 0;
+  display: grid;
+  gap: 18px;
+}
+.form-section h2,
+.form-section legend {
+  color: var(--navy-900);
+  font-family: var(--serif);
+  font-size: 1.45rem;
+  font-weight: 600;
+  padding: 0;
+  margin: 0 0 2px;
+}
+.form-section legend { padding-right: 10px; }
+.section-help {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: -8px 0 0;
+}
+.member-card {
+  background: #fbfaf7;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+.member-card h3 {
+  color: var(--navy-800);
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  margin: 0;
+}
+.price-preview {
+  background: var(--navy-900);
+  color: #fff;
+  border-radius: 16px;
+  padding: 22px;
+}
+.price-preview .eyebrow { color: var(--gold-soft); margin-bottom: 8px; }
+.price-line {
+  color: #fff;
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 10px;
+}
+.price-preview .section-help { color: rgba(255,255,255,.76); margin: 0; }
+.form fieldset[hidden] { display: none; }
+
+@media (max-width: 640px) {
+  .member-card { padding: 16px; }
+  .price-preview { padding: 18px; }
 }
