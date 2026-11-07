@@ -13,12 +13,20 @@ function showLoggedOut() { loginPanel.hidden = false; dashboard.hidden = true; }
 function showDashboard(email) {
   loginPanel.hidden = true;
   dashboard.hidden = false;
-  $("#signedInAs").textContent = "Signed in as " + email;
+  const roleNames = { main_admin: "Main Admin", payment_verifier: "Payment Verifier", staff: "General Staff" };
+  $("#signedInAs").textContent = "Signed in as " + email + " · " + (roleNames[currentRole] || "Staff");
+  const isMain = currentRole === "main_admin";
+  $("#pricingPanel").hidden = !isMain;
+  $("#staffAccessPanel").hidden = !isMain;
 }
 async function isAdministrator() {
   const { data, error } = await supabase.rpc("is_eventora_admin");
   if (error) throw error;
-  return data === true;
+  if (data !== true) return false;
+  const { data: role, error: roleError } = await supabase.rpc("eventora_my_role");
+  if (roleError) throw roleError;
+  currentRole = role;
+  return ["main_admin", "payment_verifier", "staff"].includes(role);
 }
 async function guardSession() {
   const { data: { session }, error } = await supabase.auth.getSession();
@@ -32,6 +40,7 @@ async function guardSession() {
   }
   showDashboard(session.user.email || "Administrator");
   await loadRegistrations();
+  if (currentRole === "main_admin") await loadStaffRoles();
 }
 function formatDate(value) {
   if (!value) return "—";
@@ -98,11 +107,7 @@ function renderRows() {
       <td><strong>${formatTaka(r.total_payable)}</strong><br><span class="muted">Subtotal ${formatTaka(r.fee_subtotal)} · Discount ${formatTaka(r.discount_amount)}</span><br><span class="muted">${escapeHtml(r.discount_type || "none")}</span></td>
       <td><span class="pill ${escapeHtml(r.drive_archive_status || "not_configured")}">${escapeHtml(r.drive_archive_status || "not_configured")}</span></td>
       <td>${escapeHtml(formatDate(r.created_at))}</td>
-      <td><span class="pill ${escapeHtml(r.status)}">${escapeHtml(r.status)}</span><br><div class="row-actions"><select aria-label="New status for ${escapeHtml(r.reference)}" data-status-id="${escapeHtml(r.id)}">
-        <option value="pending" ${r.status === "pending" ? "selected" : ""}>Pending</option>
-        <option value="approved" ${r.status === "approved" ? "selected" : ""}>Approved</option>
-        <option value="rejected" ${r.status === "rejected" ? "selected" : ""}>Rejected</option>
-      </select><button type="button" data-save-id="${escapeHtml(r.id)}">Save</button></div></td>
+      <td><span class="pill ${escapeHtml(r.status)}">${escapeHtml(r.status)}</span>${currentRole === "main_admin" ? '<br><div class="row-actions"><select aria-label="New status" data-status-id="' + escapeHtml(r.id) + '"><option value="pending" ' + (r.status === "pending" ? "selected" : "") + '>Pending</option><option value="approved" ' + (r.status === "approved" ? "selected" : "") + '>Approved</option><option value="rejected" ' + (r.status === "rejected" ? "selected" : "") + '>Rejected</option></select><button type="button" data-save-id="' + escapeHtml(r.id) + '">Save</button></div>' : ''}</td>
     </tr>`).join("");
   }
   $("#recordCount").textContent = `Showing ${filtered.length} of ${records.length} records`;
@@ -138,7 +143,53 @@ async function handleLogin(event) {
     button.textContent = "Sign in securely";
   }
 }
+function showRoleMessage(text, type = "") {
+  const el = $("#staffRoleMessage");
+  if (!el) return;
+  el.textContent = text;
+  el.className = "notice" + (type ? " " + type : "");
+  el.hidden = !text;
+}
+async function loadStaffRoles() {
+  const body = $("#staffRoleRows");
+  if (!body) return;
+  const { data, error } = await supabase.from("eventora_user_roles")
+    .select("user_id,role,active,created_at").order("created_at", { ascending: true });
+  if (error) {
+    body.innerHTML = '<tr><td colspan="3" class="empty">Could not load staff roles.</td></tr>';
+    showRoleMessage("Could not load staff access: " + error.message, "error");
+    return;
+  }
+  const rows = (data || []).filter(item => item.role !== "main_admin");
+  body.innerHTML = rows.length ? rows.map(item =>
+    '<tr><td><code>' + escapeHtml(item.user_id) + '</code></td><td>' +
+    escapeHtml(item.role.replaceAll("_", " ")) + '</td><td><span class="pill ' +
+    (item.active ? "approved" : "rejected") + '">' + (item.active ? "Active" : "Disabled") +
+    '</span></td></tr>').join("") :
+    '<tr><td colspan="3" class="empty">No staff accounts assigned yet.</td></tr>';
+}
+async function saveStaffRole(event) {
+  event.preventDefault();
+  const button = $("#saveStaffRole");
+  button.disabled = true;
+  showRoleMessage("");
+  try {
+    const { error } = await supabase.rpc("eventora_assign_role", {
+      p_user_id: $("#staffUserId").value.trim(),
+      p_role: $("#staffRole").value
+    });
+    if (error) throw error;
+    showRoleMessage("Staff access updated.");
+    $("#staffUserId").value = "";
+    await loadStaffRoles();
+  } catch (error) {
+    showRoleMessage(error.message || "Could not update staff access.", "error");
+  } finally {
+    button.disabled = false;
+  }
+}
 async function handleTableClick(event) {
+  if (currentRole !== "main_admin") return;
   const button = event.target.closest("[data-save-id]");
   if (!button) return;
   const id = button.dataset.saveId;
@@ -177,7 +228,8 @@ async function init() {
   $("#refresh").addEventListener("click", loadRegistrations);
   $("#search").addEventListener("input", renderRows);
   $("#statusFilter").addEventListener("change", renderRows);
-  $("#registrationRows").addEventListener("click", handleTableClick);\n  $("#staffRoleForm")?.addEventListener("submit", saveStaffRole);
+  $("#registrationRows").addEventListener("click", handleTableClick);
+  $("#staffRoleForm")?.addEventListener("submit", saveStaffRole);\n  $("#staffRoleForm")?.addEventListener("submit", saveStaffRole);
   supabase.auth.onAuthStateChange((_event, session) => { if (!session) showLoggedOut(); });
   try { await guardSession(); }
   catch (error) { showLoggedOut(); showMessage(error.message || "Could not verify this session.", "error"); }
