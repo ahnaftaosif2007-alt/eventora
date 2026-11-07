@@ -125,6 +125,22 @@ begin
   select role into v_old_role
   from public.eventora_user_roles where user_id = p_user_id;
 
+  if v_old_role = 'main_admin' then
+    raise exception 'A Main Admin role cannot be changed through staff management.';
+  end if;
+  if p_role = 'payment_verifier' and (
+    select count(*) from public.eventora_user_roles
+    where role = 'payment_verifier' and active = true and user_id <> p_user_id
+  ) >= 2 then
+    raise exception 'Only two active Payment Verifiers can be assigned.';
+  end if;
+  if p_role = 'staff' and (
+    select count(*) from public.eventora_user_roles
+    where role = 'staff' and active = true and user_id <> p_user_id
+  ) >= 3 then
+    raise exception 'Only three active General Staff accounts can be assigned.';
+  end if;
+
   insert into public.eventora_user_roles(user_id, role, active, assigned_by, updated_at)
   values (p_user_id, p_role, p_role <> 'disabled', (select auth.uid()), now())
   on conflict (user_id) do update
