@@ -13,20 +13,25 @@ as $$
 declare
   v_segment text;
 begin
-  if tg_op = 'DELETE' then
+  if tg_op = 'DELETE'
+     or (tg_op = 'UPDATE' and (old.segment is distinct from new.segment
+                               or old.division is distinct from new.division)) then
     for v_segment in
-      select pg_catalog.btrim(x)
-      from pg_catalog.regexp_split_to_table(old.segment, '\\s*/\\s*') as x
+      select pg_catalog.btrim(parts.value)
+      from pg_catalog.regexp_split_to_table(old.segment, '[[:space:]]*/[[:space:]]*') as parts(value)
     loop
       delete from public.eventora_registration_segment_prices
       where segment = v_segment and division = old.division;
     end loop;
+  end if;
+
+  if tg_op = 'DELETE' then
     return old;
   end if;
 
   for v_segment in
-    select pg_catalog.btrim(x)
-    from pg_catalog.regexp_split_to_table(new.segment, '\\s*/\\s*') as x
+    select pg_catalog.btrim(parts.value)
+    from pg_catalog.regexp_split_to_table(new.segment, '[[:space:]]*/[[:space:]]*') as parts(value)
   loop
     insert into public.eventora_registration_segment_prices(segment, division, price)
     values (v_segment, new.division, new.price)
@@ -42,15 +47,15 @@ drop trigger if exists sync_eventora_registration_prices
 on public.event_segment_prices;
 
 create trigger sync_eventora_registration_prices
-after insert or update of segment, division, price or delete
+after insert or update or delete
 on public.event_segment_prices
 for each row
 execute function public.sync_eventora_registration_segment_prices();
 
 -- Initial reconciliation: existing admin-facing prices overwrite intake prices.
 insert into public.eventora_registration_segment_prices(segment, division, price)
-select pg_catalog.btrim(parts.segment), p.division, p.price
+select pg_catalog.btrim(parts.value), p.division, p.price
 from public.event_segment_prices p
-cross join lateral pg_catalog.regexp_split_to_table(p.segment, '\\s*/\\s*') as parts(segment)
+cross join lateral pg_catalog.regexp_split_to_table(p.segment, '[[:space:]]*/[[:space:]]*') as parts(value)
 on conflict (segment, division)
 do update set price = excluded.price;
