@@ -320,6 +320,10 @@ const SEGMENT_FEES = {
   "Baroari Debate": { A: 100, B: 150, C: 150 }
 };
 const CLUB_VALUES = ["boys", "girls"];
+// Temporary prototype switch. In the live registration system this will be read from Admin Dashboard settings.
+const EARLY_BIRD_ACTIVE = false;
+const CLUB_DISCOUNT_RATE = 0.15;
+const EARLY_BIRD_DISCOUNT_RATE = 0.20;
 
 function populateEventOptions() {
   // Only the Inter-Wing Championship is being prepared for registration.
@@ -340,31 +344,34 @@ function setFieldsetActive(id, active) {
   fieldset.disabled = !active;
 }
 
+function selectedSegments() {
+  return $$('input[name="segments"]:checked').map((input) => input.value);
+}
+
 function updateRegistrationFields() {
   const division = $("#fDivision").value;
-  const segment = $("#fSegment").value;
-  const apOption = Array.from($("#fSegment").options).find((option) => option.value === "AP Debate");
+  const apOption = $('input[name="segments"][value="AP Debate"]');
   apOption.disabled = division !== "C";
+  if (division !== "C") apOption.checked = false;
 
-  if (segment === "AP Debate" && division !== "C") {
-    $("#fSegment").value = "";
-  }
-
-  const selected = $("#fSegment").value;
-  const isAP = selected === "AP Debate";
-  const isMystery = selected === "Mystery Case Challenge";
+  const selected = selectedSegments();
+  const isAP = selected.includes("AP Debate");
+  const isMystery = selected.includes("Mystery Case Challenge");
   setFieldsetActive("apTeamFields", isAP);
   setFieldsetActive("mysteryFields", isMystery);
 
-  if (isAP) {
-    $("#participantHeading").textContent = "Team contact · Member 1";
-    $("#participantHelp").textContent = "Enter the first member's details. Add the other two members below. AP Debate is available only in Division C.";
+  if (isAP && isMystery) {
+    $("#participantHeading").textContent = "Primary registrant · Team contact";
+    $("#participantHelp").textContent = "Enter the primary registrant's details. Complete the AP Debate and Mystery Case team details below.";
+  } else if (isAP) {
+    $("#participantHeading").textContent = "AP Debate team contact · Member 1";
+    $("#participantHelp").textContent = "Enter the first member's details. Add the other two team members below. AP Debate is available only in Division C.";
   } else if (isMystery) {
-    $("#participantHeading").textContent = "Primary registrant";
+    $("#participantHeading").textContent = "Mystery Case primary registrant";
     $("#participantHelp").textContent = "Enter your details as the team's primary contact. Add only your teammate's name and club membership below.";
   } else {
     $("#participantHeading").textContent = "Participant details";
-    $("#participantHelp").textContent = "Solo segments accept one participant per registration. Register separately for each additional solo segment.";
+    $("#participantHelp").textContent = "These details apply to all selected solo segments. Register the same participant once for this combined selection.";
   }
   updateFeePreview();
 }
@@ -373,36 +380,75 @@ function roundTaka(amount) {
   return Math.floor(amount + 0.5);
 }
 
-function updateFeePreview() {
-  const division = $("#fDivision").value;
-  const segment = $("#fSegment").value;
-  const feeLine = $("#feePreview");
-  if (!division || !segment) {
-    feeLine.textContent = "Choose a division and segment to see the fee.";
-    return;
-  }
-  const base = SEGMENT_FEES[segment]?.[division];
-  if (typeof base !== "number") {
-    feeLine.textContent = segment === "AP Debate"
-      ? "AP Debate is available only in Division C."
-      : "Fee information is not available for this selection.";
-    return;
-  }
-
-  const clubSelections = [$("#fClub").value];
-  if (segment === "AP Debate") {
-    clubSelections.push($("#fMember2Club").value, $("#fMember3Club").value);
-  } else if (segment === "Mystery Case Challenge") {
-    clubSelections.push($("#fMysteryMateClub").value);
-  }
-  const hasClubMember = clubSelections.some((value) => CLUB_VALUES.includes(value));
-  const discounted = hasClubMember ? roundTaka(base * 0.85) : base;
-  const unit = segment === "AP Debate" || segment === "Mystery Case Challenge" ? "per team" : "per participant";
-  feeLine.textContent = hasClubMember
-    ? `৳${base.toLocaleString("en-BD")} ${unit} · Club Member fee: ৳${discounted.toLocaleString("en-BD")}`
-    : `৳${base.toLocaleString("en-BD")} ${unit}`;
+function formatTaka(amount) {
+  return "৳" + amount.toLocaleString("en-BD");
 }
 
+function updateFeePreview() {
+  const division = $("#fDivision").value;
+  const selected = selectedSegments();
+  const breakdown = $("#feeBreakdown");
+  const feeLine = $("#feePreview");
+
+  if (!division || selected.length === 0) {
+    feeLine.textContent = !division
+      ? "Choose a division and at least one segment to see your total."
+      : "Choose at least one segment to see your total.";
+    breakdown.querySelectorAll(".fee-row, .fee-total-row").forEach((node) => node.remove());
+    return;
+  }
+
+  const rows = [];
+  let subtotal = 0;
+  let totalPayable = 0;
+  selected.forEach((segment) => {
+    const base = SEGMENT_FEES[segment]?.[division];
+    if (typeof base !== "number") return;
+
+    let clubSelections = [$("#fClub").value];
+    if (segment === "AP Debate") {
+      clubSelections = clubSelections.concat($("#fMember2Club").value, $("#fMember3Club").value);
+    } else if (segment === "Mystery Case Challenge") {
+      clubSelections = clubSelections.concat($("#fMysteryMateClub").value);
+    }
+    const hasClubMember = clubSelections.some((value) => CLUB_VALUES.includes(value));
+    const discountRate = EARLY_BIRD_ACTIVE
+      ? EARLY_BIRD_DISCOUNT_RATE
+      : (hasClubMember ? CLUB_DISCOUNT_RATE : 0);
+    const payable = roundTaka(base * (1 - discountRate));
+    subtotal += base;
+    totalPayable += payable;
+    rows.push({
+      segment,
+      base,
+      payable,
+      discount: base - payable,
+      rate: discountRate
+    });
+  });
+
+  if (rows.length !== selected.length) {
+    feeLine.textContent = "One or more selected segments are unavailable for this division.";
+    return;
+  }
+
+  const discountTotal = subtotal - totalPayable;
+  const rowsHtml = rows.map((row) => `
+    <div class="fee-row">
+      <span>${escapeHtml(row.segment)}</span>
+      <strong>${formatTaka(row.base)}</strong>
+      ${row.discount > 0 ? `<small class="fee-discount">${Math.round(row.rate * 100)}% discount · −${formatTaka(row.discount)}</small>` : ""}
+      <strong class="fee-payable">${formatTaka(row.payable)}</strong>
+    </div>`).join("");
+
+  breakdown.innerHTML = `
+    <p class="price-line">${rows.length} selected segment${rows.length === 1 ? "" : "s"}</p>
+    ${rowsHtml}
+    <div class="fee-total-row"><span>Subtotal</span><strong>${formatTaka(subtotal)}</strong></div>
+    <div class="fee-total-row fee-savings"><span>${EARLY_BIRD_ACTIVE ? "Early Bird discount (20%)" : "Club Member discount (where eligible)"}</span><strong>−${formatTaka(discountTotal)}</strong></div>
+    <div class="fee-grand-total"><span>Total payable</span><strong>${formatTaka(totalPayable)}</strong></div>`;
+  feeLine.textContent = "";
+}
 function makeReference() {
   return "DEMO-" + Math.random().toString(36).slice(2, 8).toUpperCase();
 }
@@ -412,7 +458,7 @@ function setupRegistrationForm() {
   if (!form) return;
 
   form.addEventListener("change", (e) => {
-    if (["division", "segment", "club", "member2Club", "member3Club", "mysteryMateClub"].includes(e.target.name)) {
+    if (["division", "club", "member2Club", "member3Club", "mysteryMateClub", "segments"].includes(e.target.name)) {
       updateRegistrationFields();
     }
   });
@@ -422,20 +468,22 @@ function setupRegistrationForm() {
     const formError = $("#formError");
     formError.hidden = true;
 
-    const invalid = Array.from(form.elements).find((el) =>
-      el.willValidate && !el.checkValidity()
-    );
     const division = $("#fDivision");
-    const segment = $("#fSegment");
-    if (segment.value === "AP Debate" && division.value !== "C") {
-      division.setCustomValidity("AP Debate is available only in Division C.");
-    } else {
-      division.setCustomValidity("");
+    const selected = selectedSegments();
+    division.setCustomValidity(selected.includes("AP Debate") && division.value !== "C"
+      ? "AP Debate is available only in Division C."
+      : "");
+
+    if (selected.length === 0) {
+      formError.textContent = "Please select at least one segment.";
+      formError.hidden = false;
+      $('input[name="segments"]').focus();
+      return;
     }
 
     const firstInvalid = Array.from(form.elements).find((el) =>
       el.willValidate && !el.checkValidity()
-    ) || invalid;
+    );
 
     if (firstInvalid) {
       firstInvalid.setAttribute("aria-invalid", "true");
@@ -450,6 +498,8 @@ function setupRegistrationForm() {
       name: $("#fName").value.trim(),
       eventTitle: event ? event.title : "The Inter-Wing Collegiate Debate Championship",
       eventDate: event ? formatDate(event.date) : "13–14 December 2026",
+      segments: selected,
+      fee: $(".fee-grand-total strong")?.textContent || "Fee preview unavailable",
       ref: makeReference()
     };
 
@@ -465,6 +515,8 @@ function renderSuccess() {
   $("#successRef").textContent = lastDemo.ref;
   $("#successEvent").textContent = lastDemo.eventTitle;
   $("#successDate").textContent = lastDemo.eventDate;
+  $("#successSegments").textContent = lastDemo.segments.join(", ");
+  $("#successFee").textContent = lastDemo.fee;
 }
 
 /* ----- QR and share page ----- */
