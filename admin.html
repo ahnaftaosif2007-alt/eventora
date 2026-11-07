@@ -75,6 +75,24 @@
         </div>
         <p class="muted pricing-note">Early Bird replaces the club-member discount; the two discounts do not stack. AP Debate is available only in Division C.</p>
       </section>
+      <section id="staffAccessPanel" class="panel staff-access-panel" hidden>
+        <div class="table-head"><div><p class="eyebrow">ACCESS CONTROL</p><h3>Staff access management</h3>
+          <p class="muted">Assign an existing Supabase Auth user by UUID. Create accounts first in Supabase Authentication.</p></div></div>
+        <form id="staffRoleForm" class="role-form">
+          <label for="staffUserId">Auth User UUID</label>
+          <input id="staffUserId" type="text" autocomplete="off" placeholder="Paste Auth User UUID" required>
+          <label for="staffRole">Assign role</label>
+          <select id="staffRole" required>
+            <option value="payment_verifier">Payment Verifier</option>
+            <option value="staff">General Staff</option>
+            <option value="disabled">Disable access</option>
+          </select>
+          <button id="saveStaffRole" class="button primary" type="submit">Save staff access</button>
+        </form>
+        <div id="staffRoleMessage" class="notice" role="status" aria-live="polite" hidden></div>
+        <div class="table-wrap"><table><thead><tr><th>Auth User UUID</th><th>Role</th><th>Access</th></tr></thead>
+          <tbody id="staffRoleRows"><tr><td colspan="3" class="empty">No staff roles loaded.</td></tr></tbody></table></div>
+      </section>
       <section class="panel">
         <div class="table-head">
           <div><h3>Participant records</h3><p class="muted">Registration details, team information, fee calculation and archive status are visible only to authorised administrators.</p></div>
@@ -93,6 +111,19 @@
           </table>
         </div>
         <p id="recordCount" class="muted table-foot"></p>
+      </section>
+      <section class="panel rulebook-panel">
+        <p class="eyebrow">DASHBOARD GUIDELINES</p><h3>EVENTORA — Admin &amp; Staff Rulebook</h3>
+        <ol class="rulebook-list">
+          <li>Participant information and payment evidence are confidential. Share only for an authorised event task.</li>
+          <li>All five Staff accounts may view registration records and submitted payment evidence once the payment module is enabled.</li>
+          <li>Only the two designated Payment Verifiers and the Main Admin may approve or reject payments.</li>
+          <li>General Staff may view records but cannot make payment decisions or change participant approval status.</li>
+          <li>The Main Admin alone controls pricing, Early Bird settings, staff roles and participant approval or rejection.</li>
+          <li>Never share passwords. Each person must use their own account.</li>
+          <li>Important actions must remain traceable in the audit history.</li>
+          <li>The Main Admin may correct participant decisions and disable or restore staff access.</li>
+        </ol>
       </section>
     </section>
     <footer>EVENTORA · Restricted organizer access · Keep your account credentials private.</footer>
