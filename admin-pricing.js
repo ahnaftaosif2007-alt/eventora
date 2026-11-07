@@ -109,7 +109,7 @@ async function initPricingPanel() {
   });
   const { data: { session } } = await pricingClient.auth.getSession();
   if (!session) return;
-  const { data: isAdmin, error: adminError } = await pricingClient.rpc("is_eventora_admin");
+  const { data: isAdmin, error: adminError } = await pricingClient.rpc("is_eventora_main_admin");
   if (adminError || isAdmin !== true) return;
 
   pricingPanel.hidden = false;
