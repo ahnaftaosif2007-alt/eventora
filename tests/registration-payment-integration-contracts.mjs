@@ -24,3 +24,5 @@ const checks = [
 for (const [label, passed] of checks) console.log(`${passed ? "PASS" : "FAIL"}  ${label}`);
 assert.ok(checks.every(([, passed]) => passed), "One or more registration/payment integration contract checks failed.");
 console.log(`\\n${checks.length}/${checks.length} integration contract checks passed.`);
+
+// Kept in the QA branch; does not alter the live EVENTORA site.
