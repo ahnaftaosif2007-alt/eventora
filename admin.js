@@ -63,6 +63,7 @@ function detailList(r) {
   const team = data.team || {};
   const lines = [
     ["Division", r.division || data.division || "—"],
+    ["Membership fee", formatTaka(r.membership_fee)],
     ["Selected segments", (r.selected_segments || data.segments || []).join(", ") || "—"],
     ["Primary club", clubLabel(data.club)],
     ["AP team name", team.teamName],
@@ -104,7 +105,7 @@ function renderRows() {
       <td>${escapeHtml(r.institution || "—")}</td>
       <td><strong>${escapeHtml(r.division || "—")}</strong><br><span class="muted">${escapeHtml((r.selected_segments || []).join(", ") || "—")}</span></td>
       <td><details><summary>View details</summary><div class="registration-detail-box">${detailList(r)}</div></details></td>
-      <td><strong>${formatTaka(r.total_payable)}</strong><br><span class="muted">Subtotal ${formatTaka(r.fee_subtotal)} · Discount ${formatTaka(r.discount_amount)}</span><br><span class="muted">${escapeHtml(r.discount_type || "none")}</span></td>
+      <td><strong>${formatTaka(r.total_payable)}</strong><br><span class="muted">Membership ${formatTaka(r.membership_fee)} · Subtotal ${formatTaka(r.fee_subtotal)} · Discount ${formatTaka(r.discount_amount)}</span><br><span class="muted">${escapeHtml(r.discount_type || "none")}</span></td>
       <td><span class="pill ${escapeHtml(r.drive_archive_status || "not_configured")}">${escapeHtml(r.drive_archive_status || "not_configured")}</span></td>
       <td>${escapeHtml(formatDate(r.created_at))}</td>
       <td><span class="pill ${escapeHtml(r.status)}">${escapeHtml(r.status)}</span>${currentRole === "main_admin" ? '<br><div class="row-actions"><select aria-label="New status" data-status-id="' + escapeHtml(r.id) + '"><option value="pending" ' + (r.status === "pending" ? "selected" : "") + '>Pending</option><option value="approved" ' + (r.status === "approved" ? "selected" : "") + '>Approved</option><option value="rejected" ' + (r.status === "rejected" ? "selected" : "") + '>Rejected</option></select><button type="button" data-save-id="' + escapeHtml(r.id) + '">Save</button></div>' : ''}</td>
@@ -115,7 +116,7 @@ function renderRows() {
 }
 async function loadRegistrations() {
   $("#registrationRows").innerHTML = '<tr><td colspan="10" class="empty">Loading records…</td></tr>';
-  const columns = "id,reference,participant_name,email,institution,event_name,team_name,status,created_at,division,selected_segments,registration_data,fee_subtotal,discount_type,discount_rate,discount_amount,total_payable,drive_archive_status";
+  const columns = "id,reference,participant_name,email,institution,event_name,team_name,status,created_at,division,selected_segments,registration_data,membership_fee,fee_subtotal,discount_type,discount_rate,discount_amount,total_payable,drive_archive_status";
   const { data, error } = await supabase.from("registrations").select(columns).order("created_at", { ascending: false }).limit(500);
   if (error) {
     showMessage("Could not load registrations: " + error.message, "error");
