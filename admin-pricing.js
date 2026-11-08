@@ -107,10 +107,14 @@ async function initPricingPanel() {
   pricingClient = createClient(config.url, config.publishableKey, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
   });
-  const { data: { session } } = await pricingClient.auth.getSession();
-  if (!session) return;
-  const { data: isAdmin, error: adminError } = await pricingClient.rpc("is_eventora_main_admin");
+  const { data: { session }, error: sessionError } = await pricingClient.auth.getSession();
+  if (sessionError || !session) return;
+
+  // Reuse the same role checks already used by the main organizer dashboard.
+  const { data: isAdmin, error: adminError } = await pricingClient.rpc("is_eventora_admin");
   if (adminError || isAdmin !== true) return;
+  const { data: role, error: roleError } = await pricingClient.rpc("eventora_my_role");
+  if (roleError || role !== "main_admin") return;
 
   pricingPanel.hidden = false;
   $("#earlyBirdForm").addEventListener("submit", savePricingSettings);
