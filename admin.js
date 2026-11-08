@@ -19,6 +19,7 @@ function showDashboard(email) {
   $("#pricingPanel").hidden = !isMain;
   $("#staffAccessPanel").hidden = !isMain;
   $("#paymentPanel").hidden = !["main_admin", "payment_verifier"].includes(currentRole);
+  $("#paymentAuditPanel").hidden = !isMain;
 }
 async function isAdministrator() {
   const { data, error } = await supabase.rpc("is_eventora_admin");
@@ -42,7 +43,7 @@ async function guardSession() {
   showDashboard(session.user.email || "Administrator");
   await loadRegistrations();
   if (["main_admin", "payment_verifier"].includes(currentRole)) await loadPaymentQueue();
-  if (currentRole === "main_admin") await loadStaffRoles();
+  if (currentRole === "main_admin") { await loadStaffRoles(); await loadPaymentAudit(); }
 }
 function formatDate(value) {
   if (!value) return "—";
@@ -179,6 +180,28 @@ async function handlePaymentReview(event) {
   }
   showMessage("Payment marked as " + decision + ".", "success");
   await loadPaymentQueue();
+}
+async function loadPaymentAudit() {
+  if (currentRole !== "main_admin") return;
+  const body = $("#paymentAuditRows");
+  if (!body) return;
+  body.innerHTML = '<tr><td colspan="5" class="empty">Loading audit log…</td></tr>';
+  const { data, error } = await supabase.from("eventora_payment_audit")
+    .select("id,submission_id,actor_user_id,action,note,created_at")
+    .order("created_at", { ascending: false }).limit(200);
+  if (error) {
+    body.innerHTML = '<tr><td colspan="5" class="empty">Unable to load audit log.</td></tr>';
+    showMessage("Could not load payment audit log: " + error.message, "error");
+    return;
+  }
+  const items = data || [];
+  body.innerHTML = items.length ? items.map(item =>
+    '<tr><td><span class="pill ' + (item.action === "verified" ? "approved" : item.action === "rejected" ? "rejected" : "pending") + '">' + escapeHtml(item.action) + '</span></td>' +
+    '<td><code>' + escapeHtml(item.submission_id) + '</code></td>' +
+    '<td><code>' + escapeHtml(item.actor_user_id || "Participant / system") + '</code></td>' +
+    '<td>' + escapeHtml(item.note || "—") + '</td><td>' + escapeHtml(formatDate(item.created_at)) + '</td></tr>'
+  ).join("") : '<tr><td colspan="5" class="empty">No payment audit entries yet.</td></tr>';
+  $("#paymentAuditCount").textContent = items.length + " audit entr" + (items.length === 1 ? "y" : "ies") + " (latest 200)";
 }
 async function loadRegistrations() {
   $("#registrationRows").innerHTML = '<tr><td colspan="10" class="empty">Loading records…</td></tr>';
@@ -320,6 +343,7 @@ async function init() {
   $("#registrationRows").addEventListener("click", handleTableClick);
   $("#paymentRows")?.addEventListener("click", handlePaymentReview);
   $("#refreshPayments")?.addEventListener("click", loadPaymentQueue);
+  $("#refreshPaymentAudit")?.addEventListener("click", loadPaymentAudit);
   $("#staffRoleForm")?.addEventListener("submit", saveStaffRole);
   supabase.auth.onAuthStateChange((_event, session) => { if (!session) showLoggedOut(); });
   try { await guardSession(); }
