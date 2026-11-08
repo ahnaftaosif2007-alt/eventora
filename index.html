@@ -137,11 +137,10 @@
     <!-- ============ REGISTER ============ -->
     <section class="view" data-view="register" id="view-register" hidden>
       <div class="container narrow page-head">
-        <p class="eyebrow">Registration preview</p>
+        <p class="eyebrow">Registration setup</p>
         <h1>Inter-Wing Collegiate Debate Championship</h1>
         <p class="note">
-          Registration is not open yet. This is a form preview only: submissions are not sent to the organisers,
-          stored, or treated as actual registrations.
+          Registration is not open yet. This form is being connected and tested. Please do not submit participant information until the organisers officially announce that registration has opened.
         </p>
         <p class="event-date-line"><strong>13–14 December 2026</strong> · Venue and schedule to be announced</p>
       </div>
@@ -257,13 +256,13 @@
           <div class="field">
             <label class="checkbox" for="fConsent">
               <input id="fConsent" name="consent" type="checkbox" required>
-              <span>I understand this is a preview only and my details will not be submitted or stored. <span class="req" aria-hidden="true">*</span></span>
+              <span>I confirm that the information provided is accurate and may be used by the organisers for event registration. <span class="req" aria-hidden="true">*</span></span>
             </label>
           </div>
 
           <p class="error" id="formError" role="alert" hidden></p>
           <div class="form-actions">
-            <button type="submit" class="btn btn-gold">Preview demo submission</button>
+            <button type="submit" class="btn btn-gold">Registration opening soon</button>
           </div>
         </form>
       </div>
@@ -273,9 +272,9 @@
     <section class="view" data-view="success" id="view-success" hidden>
       <div class="container narrow center section-tight">
         <div class="success-mark" aria-hidden="true">?</div>
-        <p class="eyebrow">Demo confirmation</p>
+        <p class="eyebrow">Registration received</p>
         <h1>Thank you, <span id="successName">participant</span>.</h1>
-        <p>Your demo registration screen has been completed. Please keep this reference for the prototype walkthrough.</p>
+        <p>Your registration has been received. Please keep this reference for follow-up with the organisers.</p>
 
         <div class="ticket">
           <p><strong>Reference:</strong> <span id="successRef"></span></p>
@@ -286,8 +285,7 @@
         </div>
 
         <p class="note">
-          Important: this is a prototype. No registration has been submitted to any organizer, no personal data
-          has been stored, and no identity has been verified.
+          Your registration will remain pending until reviewed by the organisers. Submission does not verify payment or participant identity.
         </p>
 
         <div class="hero-actions center-actions">
@@ -494,6 +492,7 @@
     </div>
   </footer>
 
+  <script src="config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
