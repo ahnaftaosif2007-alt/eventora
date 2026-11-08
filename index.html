@@ -495,5 +495,31 @@
 
   <script src="config.js"></script>
   <script src="script.js?v=nav-fix-20261108"></script>
+  <script>
+    // Lightweight route fallback: keeps pages accessible if an optional app script fails.
+    (function () {
+      function showCurrentView() {
+        var route = (window.location.hash || "#home").slice(1).split(/[/?]/)[0];
+        var allowed = ["home", "events", "event", "register", "success", "announcements", "about", "contact", "id", "share"];
+        if (allowed.indexOf(route) < 0) route = "home";
+        document.querySelectorAll("[data-view]").forEach(function (view) {
+          view.hidden = view.getAttribute("data-view") !== route;
+        });
+      }
+      document.addEventListener("click", function (event) {
+        var link = event.target.closest('a[href^="#"]');
+        if (link && link.getAttribute("href") !== "#") {
+          var href = link.getAttribute("href");
+          if (window.location.hash === href) showCurrentView();
+        }
+      }, true);
+      window.addEventListener("hashchange", showCurrentView);
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", showCurrentView);
+      } else {
+        showCurrentView();
+      }
+    })();
+  </script>
 </body>
 </html>
