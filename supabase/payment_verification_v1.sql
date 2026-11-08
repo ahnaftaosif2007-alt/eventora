@@ -218,7 +218,7 @@ begin
     raise exception 'Only an authorised Payment Verifier or Main Admin can review payments.';
   end if;
 
-  if p_submission_id is null or p_decision not in ('verified','rejected') then
+  if p_submission_id is null or p_decision is null or p_decision not in ('verified','rejected') then
     raise exception 'Choose a valid payment decision.';
   end if;
 
