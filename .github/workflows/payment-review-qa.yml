@@ -29,3 +29,5 @@ jobs:
           node-version: 20
       - name: Run isolated source checks
         run: node tests/payment-review-source-checks.mjs
+      - name: Run offline behavior-model tests
+        run: node tests/payment-review-behavior-model.mjs
