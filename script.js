@@ -393,7 +393,7 @@ let lastRegistration = null;
 
 async function supabaseRequest(path, options = {}) {
   if (!SUPABASE_CONFIG.url || !SUPABASE_CONFIG.publishableKey) throw new Error("Registration service is not configured.");
-  const response = await fetch(SUPABASE_CONFIG.url.replace(/\\/$/, "") + path, {
+  const response = await fetch(SUPABASE_CONFIG.url.replace(/\/$/, "") + path, {
     ...options,
     headers: { apikey: SUPABASE_CONFIG.publishableKey, Authorization: "Bearer " + SUPABASE_CONFIG.publishableKey, "Content-Type": "application/json", ...(options.headers || {}) }
   });
