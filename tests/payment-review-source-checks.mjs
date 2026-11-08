@@ -41,3 +41,5 @@ for (const [label, passed] of checks) {
 }
 assert.ok(checks.every(([, passed]) => passed), "One or more payment-review source checks failed.");
 console.log(`\\n${checks.length}/${checks.length} source checks passed.`);
+
+// QA regression coverage for transient review request failures.
