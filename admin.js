@@ -168,19 +168,22 @@ async function handlePaymentReview(event) {
   }
   if (!window.confirm("Confirm payment " + decision + "?")) return;
   button.disabled = true;
-  const { error } = await supabase.rpc("eventora_review_payment", {
-    p_submission_id: id,
-    p_decision: decision,
-    p_note: note
-  });
-  if (error) {
-    showMessage("Payment review failed: " + error.message, "error");
-    button.disabled = false;
-    return;
+  const rowActions = button.closest(".payment-actions");
+  rowActions?.querySelectorAll("button").forEach((control) => { control.disabled = true; });
+  try {
+    const { error } = await supabase.rpc("eventora_review_payment", {
+      p_submission_id: id,
+      p_decision: decision,
+      p_note: note
+    });
+    if (error) throw error;
+    showMessage("Payment marked as " + decision + ".", "success");
+    await loadPaymentQueue();
+    if (currentRole === "main_admin") await loadPaymentAudit();
+  } catch (error) {
+    showMessage("Payment review failed: " + (error.message || "Network error. Please try again."), "error");
+    rowActions?.querySelectorAll("button").forEach((control) => { control.disabled = false; });
   }
-  showMessage("Payment marked as " + decision + ".", "success");
-  await loadPaymentQueue();
-  if (currentRole === "main_admin") await loadPaymentAudit();
 }
 async function loadPaymentAudit() {
   if (currentRole !== "main_admin") return;
