@@ -19,7 +19,7 @@ function showDashboard(email) {
   $("#pricingPanel").hidden = !isMain;
   $("#staffAccessPanel").hidden = !isMain;
   $("#paymentPanel").hidden = !["main_admin", "payment_verifier"].includes(currentRole);
-  $("#paymentAuditPanel").hidden = !isMain;
+  $("#paymentAuditPanel").hidden = !isMain;\n  $("#testModePanel").hidden = false;
 }
 async function isAdministrator() {
   const { data, error } = await supabase.rpc("is_eventora_admin");
@@ -42,7 +42,7 @@ async function guardSession() {
   }
   showDashboard(session.user.email || "Administrator");
   await loadRegistrations();
-  if (["main_admin", "payment_verifier"].includes(currentRole)) await loadPaymentQueue();
+  if (["main_admin", "payment_verifier"].includes(currentRole)) { await loadPaymentQueue(); await loadTestQueue(); }
   if (currentRole === "main_admin") { await loadStaffRoles(); await loadPaymentAudit(); }
 }
 function formatDate(value) {
@@ -184,6 +184,54 @@ async function handlePaymentReview(event) {
     showMessage("Payment review failed: " + (error.message || "Network error. Please try again."), "error");
     rowActions?.querySelectorAll("button").forEach((control) => { control.disabled = false; });
   }
+}
+function renderTestQueue(items) {
+  const body=$("#testQueueRows"); if(!body)return;
+  if(!items.length){body.innerHTML='<tr><td colspan="7" class="empty">No TEST registrations yet. Use the public Test Mode page to create one.</td></tr>';$("#testQueueCount").textContent="0 TEST records";return;}
+  body.innerHTML=items.map(item=>{
+    const pending=item.payment_status==="submitted";
+    const actions=pending
+      ? '<div class="payment-actions"><input type="text" maxlength="500" placeholder="Reject reason" aria-label="TEST review note" data-test-note="'+escapeHtml(item.test_id)+'"><button class="button primary" type="button" data-test-decision="verified" data-test-id="'+escapeHtml(item.test_id)+'">Verify TEST</button><button class="button secondary" type="button" data-test-decision="rejected" data-test-id="'+escapeHtml(item.test_id)+'">Reject TEST</button></div>'
+      : '<span class="pill '+(item.payment_status==="verified"?"approved":item.payment_status==="rejected"?"rejected":"pending")+'">'+escapeHtml(item.payment_status)+'</span>';
+    return '<tr><td><strong>'+escapeHtml(item.reference)+'</strong></td><td>'+escapeHtml(item.division)+'<br><span class="muted">'+escapeHtml((item.selected_segments||[]).join(", "))+'</span></td><td>'+escapeHtml(item.payment_method||"Not submitted")+'<br><code>'+escapeHtml(item.transaction_reference||"—")+'</code><br>'+formatTaka(item.test_amount)+'</td><td><span class="pill '+(item.test_status==="checked_in"?"approved":"pending")+'">'+escapeHtml(item.test_status)+'</span></td><td><code>'+escapeHtml(item.test_token)+'</code></td><td>'+escapeHtml(formatDate(item.checked_in_at))+'</td><td>'+actions+'</td></tr>';
+  }).join("");
+  $("#testQueueCount").textContent=items.length+" isolated TEST record(s)";
+}
+async function loadTestQueue(){
+  if(!canReviewPayments())return;
+  const body=$("#testQueueRows"); if(!body)return;
+  body.innerHTML='<tr><td colspan="7" class="empty">Loading TEST queue…</td></tr>';
+  const {data,error}=await supabase.rpc("eventora_get_test_queue");
+  if(error){body.innerHTML='<tr><td colspan="7" class="empty">Unable to load TEST queue.</td></tr>';showMessage("Could not load TEST queue: "+error.message,"error");return;}
+  renderTestQueue(data||[]);
+}
+async function handleTestQueueClick(event){
+  const button=event.target.closest("[data-test-decision]");
+  if(!button||!canReviewPayments())return;
+  const id=button.dataset.testId, decision=button.dataset.testDecision;
+  const note=document.querySelector('[data-test-note="'+CSS.escape(id)+'"]')?.value.trim()||null;
+  if(decision==="rejected"&&!note){showMessage("Add a reason before rejecting a TEST payment.","warning");return;}
+  if(!window.confirm("Confirm TEST payment "+decision+"? This affects TEST data only."))return;
+  button.disabled=true;
+  try{
+    const {error}=await supabase.rpc("eventora_review_test_payment",{p_test_id:id,p_decision:decision,p_note:note});
+    if(error)throw error;
+    showMessage("TEST payment marked "+decision+".","success");await loadTestQueue();
+  }catch(error){showMessage("TEST review failed: "+(error.message||"Network error."),"error");button.disabled=false;}
+}
+async function handleTestCheckin(){
+  const token=$("#testCheckinToken").value.trim();
+  const box=$("#testCheckinMessage");
+  box.hidden=false;box.textContent="";
+  if(!token){box.textContent="Paste the TEST QR token first.";box.className="notice warning";return;}
+  const button=$("#testCheckinButton");button.disabled=true;
+  try{
+    const {data,error}=await supabase.rpc("eventora_test_checkin",{p_test_token:token});
+    if(error)throw error;
+    box.className="notice";box.textContent="TEST check-in successful: "+data.reference;
+    $("#testCheckinToken").value="";await loadTestQueue();
+  }catch(error){box.className="notice warning";box.textContent=error.message||"TEST check-in failed.";}
+  finally{button.disabled=false;}
 }
 async function loadPaymentAudit() {
   if (currentRole !== "main_admin") return;
@@ -345,7 +393,7 @@ async function init() {
   $("#search").addEventListener("input", renderRows);
   $("#statusFilter").addEventListener("change", renderRows);
   $("#registrationRows").addEventListener("click", handleTableClick);
-  $("#paymentRows")?.addEventListener("click", handlePaymentReview);
+  $("#paymentRows")?.addEventListener("click", handlePaymentReview);\n  $("#testQueueRows")?.addEventListener("click",handleTestQueueClick);\n  $("#refreshTestQueue")?.addEventListener("click",loadTestQueue);\n  $("#testCheckinButton")?.addEventListener("click",handleTestCheckin);
   $("#refreshPayments")?.addEventListener("click", loadPaymentQueue);
   $("#refreshPaymentAudit")?.addEventListener("click", loadPaymentAudit);
   $("#staffRoleForm")?.addEventListener("submit", saveStaffRole);
