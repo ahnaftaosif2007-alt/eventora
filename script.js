@@ -521,7 +521,9 @@ function updateFeePreview() {
     rowsBox.innerHTML = "";
     return;
   }
-  const subtotal = segmentSubtotal + liveMembershipFee;
+  // Membership is optional: charge it only when the primary registrant selects a club.
+  const membershipFee = CLUB_VALUES.includes($("#fClub").value) ? liveMembershipFee : 0;
+  const subtotal = segmentSubtotal + membershipFee;
   const clubSelections = [$("#fClub").value];
   if (selected.includes("AP Debate")) clubSelections.push($("#fMember2Club").value, $("#fMember3Club").value);
   if (selected.includes("Mystery Case Challenge")) clubSelections.push($("#fMysteryMateClub").value);
@@ -533,7 +535,7 @@ function updateFeePreview() {
   rowsBox.innerHTML = `
     <p class="price-line">${rows.length} selected segment${rows.length === 1 ? "" : "s"}</p>
     ${rowsHtml}
-    <div class="fee-row"><span>Membership Fee</span><strong>${formatTaka(liveMembershipFee)}</strong></div>
+    <div class="fee-row"><span>Membership Fee</span><strong>${formatTaka(membershipFee)}</strong></div>
     <div class="fee-total-row"><span>Total investment / Subtotal</span><strong>${formatTaka(subtotal)}</strong></div>
     <div class="fee-total-row fee-savings"><span>${liveEarlyBirdActive ? `Early Bird discount (${Math.round(liveEarlyBirdDiscountRate * 100)}%)` : (hasClubMember ? `Club Member discount (${Math.round(liveClubDiscountRate * 100)}%)` : "No discount")}</span><strong>−${formatTaka(discountTotal)}</strong></div>
     <div class="fee-grand-total"><span>Total payable</span><strong>${formatTaka(totalPayable)}</strong></div>`;
