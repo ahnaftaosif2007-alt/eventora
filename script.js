@@ -155,7 +155,7 @@ const ROUTE_TITLES = {
   events: "Events",
   event: "Event details",
   register: "Register",
-  success: "Registration (demo)",
+  success: "Registration confirmation",
   announcements: "Updates",
   about: "About",
   contact: "Contact",
@@ -165,7 +165,7 @@ const ROUTE_TITLES = {
 const VALID_ROUTES = Object.keys(ROUTE_TITLES);
 
 const state = { q: "", category: "All", sort: "date" };
-let lastDemo = null; // Demo submission kept in memory only. Never stored or sent.
+
 
 /* ----- Card and content templates ----- */
 function eventCard(ev) {
@@ -382,6 +382,52 @@ const EARLY_BIRD_ACTIVE = false;
 const CLUB_DISCOUNT_RATE = 0.15;
 const EARLY_BIRD_DISCOUNT_RATE = 0.20;
 
+const SUPABASE_CONFIG = window.EVENTORA_SUPABASE || {};
+let liveSegmentFees = null;
+let liveEarlyBirdActive = false;
+let lastRegistration = null;
+
+async function supabaseRequest(path, options = {}) {
+  if (!SUPABASE_CONFIG.url || !SUPABASE_CONFIG.publishableKey) throw new Error("Registration service is not configured.");
+  const response = await fetch(SUPABASE_CONFIG.url.replace(/\\/$/, "") + path, {
+    ...options,
+    headers: { apikey: SUPABASE_CONFIG.publishableKey, Authorization: "Bearer " + SUPABASE_CONFIG.publishableKey, "Content-Type": "application/json", ...(options.headers || {}) }
+  });
+  const raw = await response.text();
+  let data;
+  try { data = raw ? JSON.parse(raw) : null; } catch (_) { data = raw; }
+  if (!response.ok) throw new Error((data && (data.message || data.details || data.hint)) || "Registration request failed.");
+  return data;
+}
+
+async function loadLivePricing() {
+  try {
+    const [prices, earlyBird] = await Promise.all([
+      supabaseRequest("/rest/v1/eventora_registration_segment_prices?select=segment,division,price&order=segment.asc"),
+      supabaseRequest("/rest/v1/rpc/is_early_bird_active", { method: "POST", body: "{}" })
+    ]);
+    const mapped = {};
+    (Array.isArray(prices) ? prices : []).forEach((row) => {
+      if (!mapped[row.segment]) mapped[row.segment] = {};
+      mapped[row.segment][row.division] = Number(row.price);
+    });
+    if (!Object.keys(mapped).length) throw new Error("No segment prices are configured.");
+    liveSegmentFees = mapped;
+    liveEarlyBirdActive = earlyBird === true;
+    updateFeePreview();
+    const note = $("#discountPreview");
+    if (note) note.textContent = liveEarlyBirdActive
+      ? "The 20% Early Bird Discount is active and replaces the club discount. Discounts do not stack."
+      : "A 15% Club Member Discount applies when an eligible participant belongs to either listed club. Early Bird replaces it when active.";
+  } catch (error) {
+    console.error("EVENTORA pricing:", error);
+    const note = $("#discountPreview");
+    if (note) note.textContent = "Live prices could not be loaded. Registration submission is paused; please refresh later.";
+  }
+}
+
+function currentSegmentFees() { return liveSegmentFees || SEGMENT_FEES; }
+
 function populateEventOptions() {
   // Only the Inter-Wing Championship is being prepared for registration.
 }
@@ -460,7 +506,7 @@ function updateFeePreview() {
   let subtotal = 0;
   let totalPayable = 0;
   selected.forEach((segment) => {
-    const base = SEGMENT_FEES[segment]?.[division];
+    const base = currentSegmentFees()[segment]?.[division];
     if (typeof base !== "number") return;
 
     let clubSelections = [$("#fClub").value];
@@ -503,78 +549,95 @@ function updateFeePreview() {
     <p class="price-line">${rows.length} selected segment${rows.length === 1 ? "" : "s"}</p>
     ${rowsHtml}
     <div class="fee-total-row"><span>Subtotal</span><strong>${formatTaka(subtotal)}</strong></div>
-    <div class="fee-total-row fee-savings"><span>${EARLY_BIRD_ACTIVE ? "Early Bird discount (20%)" : "Club Member discount (where eligible)"}</span><strong>−${formatTaka(discountTotal)}</strong></div>
+    <div class="fee-total-row fee-savings"><span>${liveEarlyBirdActive ? "Early Bird discount (20%)" : "Club Member discount (where eligible)"}</span><strong>−${formatTaka(discountTotal)}</strong></div>
     <div class="fee-grand-total"><span>Total payable</span><strong>${formatTaka(totalPayable)}</strong></div>`;
   feeLine.textContent = "";
 }
-function makeReference() {
-  return "DEMO-" + Math.random().toString(36).slice(2, 8).toUpperCase();
-}
-
 function setupRegistrationForm() {
   const form = $("#registerForm");
   if (!form) return;
-
   form.addEventListener("change", (e) => {
-    if (["division", "club", "member2Club", "member3Club", "mysteryMateClub", "segments"].includes(e.target.name)) {
-      updateRegistrationFields();
-    }
+    if (["division","club","member2Club","member3Club","mysteryMateClub","segments"].includes(e.target.name)) updateRegistrationFields();
   });
-
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const formError = $("#formError");
-    formError.hidden = true;
-
+    const errorBox = $("#formError");
+    const button = form.querySelector('button[type="submit"]');
+    errorBox.hidden = true;
     const division = $("#fDivision");
-    const selected = selectedSegments();
-    division.setCustomValidity(selected.includes("AP Debate") && division.value !== "C"
-      ? "AP Debate is available only in Division C."
-      : "");
-
-    if (selected.length === 0) {
-      formError.textContent = "Please select at least one segment.";
-      formError.hidden = false;
+    const segments = selectedSegments();
+    division.setCustomValidity(segments.includes("AP Debate") && division.value !== "C" ? "AP Debate is available only in Division C." : "");
+    if (!segments.length) {
+      errorBox.textContent = "Please select at least one segment.";
+      errorBox.hidden = false;
       $('input[name="segments"]').focus();
       return;
     }
-
-    const firstInvalid = Array.from(form.elements).find((el) =>
-      el.willValidate && !el.checkValidity()
-    );
-
-    if (firstInvalid) {
-      firstInvalid.setAttribute("aria-invalid", "true");
-      formError.textContent = firstInvalid.validationMessage || "Please complete the highlighted fields.";
-      formError.hidden = false;
-      firstInvalid.focus();
+    const invalid = Array.from(form.elements).find((el) => el.willValidate && !el.checkValidity());
+    if (invalid) {
+      errorBox.textContent = invalid.validationMessage || "Please complete the required fields.";
+      errorBox.hidden = false;
+      invalid.focus();
       return;
     }
-
-    const event = EVENTS.find((item) => item.id === ACTIVE_EVENT_ID);
-    lastDemo = {
+    if (!liveSegmentFees) {
+      errorBox.textContent = "Live prices are unavailable. Registration is paused; refresh and try again later.";
+      errorBox.hidden = false;
+      return;
+    }
+    const team = {};
+    ["teamName","member2","member2Institution","member2Club","member3","member3Institution","member3Club","mysteryMate","mysteryMateClub"].forEach((key) => {
+      const field = form.elements.namedItem(key);
+      if (field && !field.disabled) team[key] = field.value.trim();
+    });
+    const payload = {
       name: $("#fName").value.trim(),
-      eventTitle: event ? event.title : "The Inter-Wing Collegiate Debate Championship",
-      eventDate: event ? formatDate(event.date) : "13–14 December 2026",
-      segments: selected,
-      fee: $(".fee-grand-total strong")?.textContent || "Fee preview unavailable",
-      ref: makeReference()
+      email: $("#fEmail").value.trim(),
+      institution: $("#fInstitution").value.trim(),
+      division: division.value,
+      club: $("#fClub").value,
+      segments,
+      team
     };
-
-    form.reset();
-    prepareRegister();
-    location.hash = "#success";
+    button.disabled = true;
+    button.textContent = "Submitting…";
+    try {
+      const result = await supabaseRequest("/rest/v1/rpc/submit_eventora_registration", {
+        method: "POST",
+        body: JSON.stringify({ p_payload: payload })
+      });
+      if (!result || result.success !== true || !result.reference) throw new Error("No valid confirmation was returned by the server.");
+      const ev = EVENTS.find((item) => item.id === ACTIVE_EVENT_ID);
+      lastRegistration = {
+        name: payload.name,
+        eventTitle: ev ? ev.title : "The Inter-Wing Collegiate Debate Championship",
+        eventDate: ev ? displayEventDate(ev) : "13–14 December 2026",
+        segments,
+        fee: formatTaka(Number(result.total_payable)),
+        ref: result.reference
+      };
+      form.reset();
+      prepareRegister();
+      location.hash = "#success";
+    } catch (error) {
+      console.error("EVENTORA registration:", error);
+      errorBox.textContent = error.message || "Registration could not be submitted. Please try again.";
+      errorBox.hidden = false;
+    } finally {
+      button.disabled = false;
+      button.textContent = "Submit registration";
+    }
   });
 }
 
 function renderSuccess() {
-  if (!lastDemo) return;
-  $("#successName").textContent = lastDemo.name;
-  $("#successRef").textContent = lastDemo.ref;
-  $("#successEvent").textContent = lastDemo.eventTitle;
-  $("#successDate").textContent = lastDemo.eventDate;
-  $("#successSegments").textContent = lastDemo.segments.join(", ");
-  $("#successFee").textContent = lastDemo.fee;
+  if (!lastRegistration) return;
+  $("#successName").textContent = lastRegistration.name;
+  $("#successRef").textContent = lastRegistration.ref;
+  $("#successEvent").textContent = lastRegistration.eventTitle;
+  $("#successDate").textContent = lastRegistration.eventDate;
+  $("#successSegments").textContent = lastRegistration.segments.join(", ");
+  $("#successFee").textContent = lastRegistration.fee;
 }
 
 /* ----- QR and share page ----- */
@@ -631,7 +694,7 @@ function render() {
   const route = getRoute();
 
   // Success is only valid right after a demo submission.
-  if (route.name === "success" && !lastDemo) {
+  if (route.name === "success" && !lastRegistration) {
     location.hash = "#register";
     return;
   }
