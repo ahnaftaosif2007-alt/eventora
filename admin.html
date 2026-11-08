@@ -94,6 +94,18 @@
         <div class="table-wrap"><table><thead><tr><th>Auth User UUID</th><th>Role</th><th>Access</th></tr></thead>
           <tbody id="staffRoleRows"><tr><td colspan="3" class="empty">No staff roles loaded.</td></tr></tbody></table></div>
       </section>
+      <section id="paymentPanel" class="panel payment-panel" hidden>
+        <div class="table-head">
+          <div><p class="eyebrow">PAYMENT REVIEW</p><h3>Payment verification queue</h3>
+            <p class="muted">Review transaction references and amounts. No PIN, OTP, password or card details are collected.</p></div>
+          <button id="refreshPayments" class="button secondary" type="button">Refresh queue</button>
+        </div>
+        <div class="table-wrap">
+          <table><thead><tr><th>Registration</th><th>Event</th><th>Method</th><th>Transaction reference</th><th>Amount</th><th>Submitted</th><th>Review note</th><th>Decision</th></tr></thead>
+            <tbody id="paymentRows"><tr><td colspan="8" class="empty">Payment queue not loaded.</td></tr></tbody></table>
+        </div>
+        <p id="paymentRecordCount" class="muted table-foot"></p>
+      </section>
       <section class="panel">
         <div class="table-head">
           <div><h3>Participant records</h3><p class="muted">Registration details, team information, fee calculation and archive status are visible only to authorised administrators.</p></div>
@@ -117,8 +129,8 @@
         <p class="eyebrow">DASHBOARD GUIDELINES</p><h3>EVENTORA — Admin &amp; Staff Rulebook</h3>
         <ol class="rulebook-list">
           <li>Participant information and payment evidence are confidential. Share only for an authorised event task.</li>
-          <li>All five Staff accounts may view registration records and submitted payment evidence once the payment module is enabled.</li>
-          <li>Payment approval is reserved for the two designated Payment Verifiers and the Main Admin. This action becomes available after the payment screenshot workflow is deployed.</li>
+          <li>Payment submissions are visible only to the Main Admin and designated Payment Verifiers. General Staff must not access payment details.</li>
+          <li>Payment decisions are reserved for the Main Admin and designated Payment Verifiers. Review the transaction reference and amount against the authorised payment record before deciding.</li>
           <li>General Staff may view records but cannot make payment decisions or change participant approval status.</li>
           <li>The Main Admin alone controls pricing, Early Bird settings, staff roles and participant approval or rejection.</li>
           <li>Never share passwords. Each person must use their own account.</li>
