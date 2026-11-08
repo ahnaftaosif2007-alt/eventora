@@ -293,7 +293,11 @@ function renderEvents() {
 
   list = list.slice().sort((a, b) => {
     if (state.sort === "title") return a.title.localeCompare(b.title);
-    if (state.sort === "deadline") return a.deadline.localeCompare(b.deadline);
+    if (state.sort === "deadline") {
+      const deadlineA = a.deadline || "9999-12-31";
+      const deadlineB = b.deadline || "9999-12-31";
+      return deadlineA.localeCompare(deadlineB) || a.date.localeCompare(b.date);
+    }
     return a.date.localeCompare(b.date);
   });
 
