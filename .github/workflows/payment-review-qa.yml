@@ -1,0 +1,31 @@
+name: Payment Review QA
+
+on:
+  push:
+    branches:
+      - qa/payment-review-isolated
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "admin.js"
+      - "supabase/payment_verification_v1.sql"
+      - "tests/**"
+      - ".github/workflows/payment-review-qa.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  payment-review-source-checks:
+    name: Payment review source checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run isolated source checks
+        run: node tests/payment-review-source-checks.mjs
