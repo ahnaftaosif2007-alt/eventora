@@ -141,7 +141,11 @@ begin
     raise exception 'The daily submission limit for this email has been reached.';
   end if;
 
-  select coalesce(s.membership_fee, 100), coalesce(s.club_member_discount, 15),
+  -- Membership is optional and is charged once only when the primary registrant
+  -- explicitly selects one of the two clubs. Teammate selections can affect discount
+  -- eligibility, but do not independently add another membership fee.
+  select case when v_club in ('boys','girls') then coalesce(s.membership_fee, 100) else 0 end,
+         coalesce(s.club_member_discount, 15),
          coalesce(s.early_bird_discount, 20)
     into v_membership_fee, v_club_discount_rate, v_early_bird_discount_rate
     from public.eventora_settings s where s.id = 1;
