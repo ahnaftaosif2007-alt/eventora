@@ -40,6 +40,7 @@ async function guardSession() {
   }
   showDashboard(session.user.email || "Administrator");
   await loadRegistrations();
+  if (["main_admin", "payment_verifier"].includes(currentRole)) await loadPaymentQueue();
   if (currentRole === "main_admin") await loadStaffRoles();
 }
 function formatDate(value) {
@@ -113,6 +114,70 @@ function renderRows() {
   }
   $("#recordCount").textContent = `Showing ${filtered.length} of ${records.length} records`;
   updateCounts(records);
+}
+function canReviewPayments() {
+  return ["main_admin", "payment_verifier"].includes(currentRole);
+}
+function renderPaymentQueue(items) {
+  const body = $("#paymentRows");
+  if (!body) return;
+  if (!items.length) {
+    body.innerHTML = '<tr><td colspan="8" class="empty">No payment submissions yet.</td></tr>';
+    $("#paymentRecordCount").textContent = "0 payment submissions";
+    return;
+  }
+  body.innerHTML = items.map(item => {
+    const pending = item.payment_status === "submitted";
+    const actions = pending
+      ? '<div class="payment-actions"><input type="text" maxlength="500" placeholder="Reason required if rejecting" aria-label="Review note" data-payment-note="' + escapeHtml(item.submission_id) + '"><button class="button primary" type="button" data-payment-decision="verified" data-payment-id="' + escapeHtml(item.submission_id) + '">Verify</button><button class="button secondary" type="button" data-payment-decision="rejected" data-payment-id="' + escapeHtml(item.submission_id) + '">Reject</button></div>'
+      : '<span class="pill ' + (item.payment_status === "verified" ? "approved" : "rejected") + '">' + escapeHtml(item.payment_status) + '</span>';
+    return '<tr><td><strong>' + escapeHtml(item.registration_reference) + '</strong><br><span class="muted">' + escapeHtml(item.participant_name) + '</span></td>' +
+      '<td>' + escapeHtml(item.event_name) + '</td><td>' + escapeHtml(item.payment_method) + '</td>' +
+      '<td><code>' + escapeHtml(item.transaction_reference) + '</code></td>' +
+      '<td><strong>' + formatTaka(item.amount) + '</strong><br><span class="muted">Expected ' + formatTaka(item.total_payable) + '</span></td>' +
+      '<td>' + escapeHtml(formatDate(item.submitted_at)) + '</td><td>' + escapeHtml(item.reviewer_note || "—") + '</td><td>' + actions + '</td></tr>';
+  }).join("");
+  $("#paymentRecordCount").textContent = items.length + " payment submission(s)";
+}
+async function loadPaymentQueue() {
+  if (!canReviewPayments()) return;
+  const body = $("#paymentRows");
+  if (!body) return;
+  body.innerHTML = '<tr><td colspan="8" class="empty">Loading payment queue…</td></tr>';
+  const { data, error } = await supabase.rpc("eventora_get_payment_queue");
+  if (error) {
+    body.innerHTML = '<tr><td colspan="8" class="empty">Unable to load payment queue.</td></tr>';
+    showMessage("Could not load payment queue: " + error.message, "error");
+    return;
+  }
+  renderPaymentQueue(data || []);
+}
+async function handlePaymentReview(event) {
+  const button = event.target.closest("[data-payment-decision]");
+  if (!button || !canReviewPayments()) return;
+  const decision = button.dataset.paymentDecision;
+  const id = button.dataset.paymentId;
+  const noteInput = document.querySelector('[data-payment-note="' + CSS.escape(id) + '"]');
+  const note = noteInput?.value.trim() || null;
+  if (decision === "rejected" && !note) {
+    showMessage("Add a short reason before rejecting a payment.", "warning");
+    noteInput?.focus();
+    return;
+  }
+  if (!window.confirm("Confirm payment " + decision + "?")) return;
+  button.disabled = true;
+  const { error } = await supabase.rpc("eventora_review_payment", {
+    p_submission_id: id,
+    p_decision: decision,
+    p_note: note
+  });
+  if (error) {
+    showMessage("Payment review failed: " + error.message, "error");
+    button.disabled = false;
+    return;
+  }
+  showMessage("Payment marked as " + decision + ".", "success");
+  await loadPaymentQueue();
 }
 async function loadRegistrations() {
   $("#registrationRows").innerHTML = '<tr><td colspan="10" class="empty">Loading records…</td></tr>';
@@ -252,6 +317,8 @@ async function init() {
   $("#search").addEventListener("input", renderRows);
   $("#statusFilter").addEventListener("change", renderRows);
   $("#registrationRows").addEventListener("click", handleTableClick);
+  $("#paymentRows")?.addEventListener("click", handlePaymentReview);
+  $("#refreshPayments")?.addEventListener("click", loadPaymentQueue);
   $("#staffRoleForm")?.addEventListener("submit", saveStaffRole);
   supabase.auth.onAuthStateChange((_event, session) => { if (!session) showLoggedOut(); });
   try { await guardSession(); }
