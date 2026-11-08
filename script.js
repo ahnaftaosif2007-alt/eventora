@@ -383,6 +383,7 @@ const CLUB_DISCOUNT_RATE = 0.15;
 const EARLY_BIRD_DISCOUNT_RATE = 0.20;
 
 const SUPABASE_CONFIG = window.EVENTORA_SUPABASE || {};
+const PUBLIC_REGISTRATION_ENABLED = false; // Keep closed until the organisers approve launch.
 let liveSegmentFees = null;
 let liveEarlyBirdActive = false;
 let lastRegistration = null;
@@ -564,6 +565,11 @@ function setupRegistrationForm() {
     const errorBox = $("#formError");
     const button = form.querySelector('button[type="submit"]');
     errorBox.hidden = true;
+    if (!PUBLIC_REGISTRATION_ENABLED) {
+      errorBox.textContent = "Registration has not officially opened yet. Please wait for the organisers’ announcement.";
+      errorBox.hidden = false;
+      return;
+    }
     const division = $("#fDivision");
     const segments = selectedSegments();
     division.setCustomValidity(segments.includes("AP Debate") && division.value !== "C" ? "AP Debate is available only in Division C." : "");
