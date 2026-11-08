@@ -33,3 +33,5 @@ jobs:
         run: node tests/payment-review-behavior-model.mjs
       - name: Run SQL security contract checks
         run: node tests/payment-review-sql-contract-checks.mjs
+      - name: Run registration/payment integration contract checks
+        run: node tests/registration-payment-integration-contracts.mjs
