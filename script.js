@@ -385,6 +385,9 @@ const EARLY_BIRD_DISCOUNT_RATE = 0.20;
 const SUPABASE_CONFIG = window.EVENTORA_SUPABASE || {};
 const PUBLIC_REGISTRATION_ENABLED = false; // Keep closed until the organisers approve launch.
 let liveSegmentFees = null;
+let liveMembershipFee = 100;
+let liveClubDiscountRate = CLUB_DISCOUNT_RATE;
+let liveEarlyBirdDiscountRate = EARLY_BIRD_DISCOUNT_RATE;
 let liveEarlyBirdActive = false;
 let lastRegistration = null;
 
@@ -403,9 +406,9 @@ async function supabaseRequest(path, options = {}) {
 
 async function loadLivePricing() {
   try {
-    const [prices, earlyBird] = await Promise.all([
+    const [prices, pricing] = await Promise.all([
       supabaseRequest("/rest/v1/eventora_registration_segment_prices?select=segment,division,price&order=segment.asc"),
-      supabaseRequest("/rest/v1/rpc/is_early_bird_active", { method: "POST", body: "{}" })
+      supabaseRequest("/rest/v1/rpc/get_eventora_public_pricing", { method: "POST", body: "{}" })
     ]);
     const mapped = {};
     (Array.isArray(prices) ? prices : []).forEach((row) => {
@@ -414,12 +417,19 @@ async function loadLivePricing() {
     });
     if (!Object.keys(mapped).length) throw new Error("No segment prices are configured.");
     liveSegmentFees = mapped;
-    liveEarlyBirdActive = earlyBird === true;
+    if (!pricing || typeof pricing !== "object") throw new Error("Registration pricing settings are unavailable.");
+    liveMembershipFee = Number(pricing.membership_fee);
+    liveClubDiscountRate = Number(pricing.club_member_discount) / 100;
+    liveEarlyBirdDiscountRate = Number(pricing.early_bird_discount) / 100;
+    if (![liveMembershipFee, liveClubDiscountRate, liveEarlyBirdDiscountRate].every(Number.isFinite) ||
+        liveMembershipFee < 0 || liveClubDiscountRate < 0 || liveClubDiscountRate > 1 ||
+        liveEarlyBirdDiscountRate < 0 || liveEarlyBirdDiscountRate > 1) throw new Error("Registration pricing settings are invalid.");
+    liveEarlyBirdActive = pricing.early_bird_active === true;
     updateFeePreview();
     const note = $("#discountPreview");
     if (note) note.textContent = liveEarlyBirdActive
-      ? "The 20% Early Bird Discount is active and replaces the club discount. Discounts do not stack."
-      : "A 15% Club Member Discount applies when an eligible participant belongs to either listed club. Early Bird replaces it when active.";
+      ? `The ${Math.round(liveEarlyBirdDiscountRate * 100)}% Early Bird Discount applies to the full subtotal, including the ৳${liveMembershipFee} Membership Fee.`
+      : `A ${Math.round(liveClubDiscountRate * 100)}% Club Member Discount applies to the full subtotal when eligible. Membership Fee is included.`;
   } catch (error) {
     console.error("EVENTORA pricing:", error);
     const note = $("#discountPreview");
@@ -491,66 +501,41 @@ function formatTaka(amount) {
 function updateFeePreview() {
   const division = $("#fDivision").value;
   const selected = selectedSegments();
-  const breakdown = $("#feeBreakdown");
   const rowsBox = $("#feeRows");
   const feeLine = $("#feePreview");
-
   if (!division || selected.length === 0) {
-    feeLine.textContent = !division
-      ? "Choose a division and at least one segment to see your total."
-      : "Choose at least one segment to see your total.";
+    feeLine.textContent = !division ? "Choose a division and at least one segment to see your total." : "Choose at least one segment to see your total.";
     rowsBox.innerHTML = "";
     return;
   }
-
   const rows = [];
-  let subtotal = 0;
-  let totalPayable = 0;
+  let segmentSubtotal = 0;
   selected.forEach((segment) => {
     const base = currentSegmentFees()[segment]?.[division];
     if (typeof base !== "number") return;
-
-    let clubSelections = [$("#fClub").value];
-    if (segment === "AP Debate") {
-      clubSelections = clubSelections.concat($("#fMember2Club").value, $("#fMember3Club").value);
-    } else if (segment === "Mystery Case Challenge") {
-      clubSelections = clubSelections.concat($("#fMysteryMateClub").value);
-    }
-    const hasClubMember = clubSelections.some((value) => CLUB_VALUES.includes(value));
-    const discountRate = liveEarlyBirdActive
-      ? EARLY_BIRD_DISCOUNT_RATE
-      : (hasClubMember ? CLUB_DISCOUNT_RATE : 0);
-    const payable = roundTaka(base * (1 - discountRate));
-    subtotal += base;
-    totalPayable += payable;
-    rows.push({
-      segment,
-      base,
-      payable,
-      discount: base - payable,
-      rate: discountRate
-    });
+    segmentSubtotal += base;
+    rows.push({ segment, base });
   });
-
   if (rows.length !== selected.length) {
     feeLine.textContent = "One or more selected segments are unavailable for this division.";
+    rowsBox.innerHTML = "";
     return;
   }
-
-  const discountTotal = subtotal - totalPayable;
-  const rowsHtml = rows.map((row) => `
-    <div class="fee-row">
-      <span>${escapeHtml(row.segment)}</span>
-      <strong>${formatTaka(row.base)}</strong>
-      ${row.discount > 0 ? `<small class="fee-discount">${Math.round(row.rate * 100)}% discount · −${formatTaka(row.discount)}</small>` : ""}
-      <strong class="fee-payable">${formatTaka(row.payable)}</strong>
-    </div>`).join("");
-
+  const subtotal = segmentSubtotal + liveMembershipFee;
+  const clubSelections = [$("#fClub").value];
+  if (selected.includes("AP Debate")) clubSelections.push($("#fMember2Club").value, $("#fMember3Club").value);
+  if (selected.includes("Mystery Case Challenge")) clubSelections.push($("#fMysteryMateClub").value);
+  const hasClubMember = clubSelections.some((value) => CLUB_VALUES.includes(value));
+  const discountRate = liveEarlyBirdActive ? liveEarlyBirdDiscountRate : (hasClubMember ? liveClubDiscountRate : 0);
+  const discountTotal = roundTaka(subtotal * discountRate);
+  const totalPayable = subtotal - discountTotal;
+  const rowsHtml = rows.map((row) => `<div class="fee-row"><span>${escapeHtml(row.segment)}</span><strong>${formatTaka(row.base)}</strong></div>`).join("");
   rowsBox.innerHTML = `
     <p class="price-line">${rows.length} selected segment${rows.length === 1 ? "" : "s"}</p>
     ${rowsHtml}
-    <div class="fee-total-row"><span>Subtotal</span><strong>${formatTaka(subtotal)}</strong></div>
-    <div class="fee-total-row fee-savings"><span>${liveEarlyBirdActive ? "Early Bird discount (20%)" : "Club Member discount (where eligible)"}</span><strong>−${formatTaka(discountTotal)}</strong></div>
+    <div class="fee-row"><span>Membership Fee</span><strong>${formatTaka(liveMembershipFee)}</strong></div>
+    <div class="fee-total-row"><span>Total investment / Subtotal</span><strong>${formatTaka(subtotal)}</strong></div>
+    <div class="fee-total-row fee-savings"><span>${liveEarlyBirdActive ? `Early Bird discount (${Math.round(liveEarlyBirdDiscountRate * 100)}%)` : (hasClubMember ? `Club Member discount (${Math.round(liveClubDiscountRate * 100)}%)` : "No discount")}</span><strong>−${formatTaka(discountTotal)}</strong></div>
     <div class="fee-grand-total"><span>Total payable</span><strong>${formatTaka(totalPayable)}</strong></div>`;
   feeLine.textContent = "";
 }
@@ -603,7 +588,8 @@ function setupRegistrationForm() {
       division: division.value,
       club: $("#fClub").value,
       segments,
-      team
+      team,
+      consent: $("#fConsent").checked
     };
     button.disabled = true;
     button.textContent = "Submitting…";
