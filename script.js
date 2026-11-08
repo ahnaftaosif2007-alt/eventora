@@ -527,9 +527,25 @@ function updateFeePreview() {
     <div class="fee-grand-total"><span>Total payable</span><strong>${formatTaka(totalPayable)}</strong></div>`;
   feeLine.textContent = "";
 }
+function lockRegistrationPreview(form) {
+  // Only division and segment selection remain interactive for fee preview.
+  form.querySelectorAll("input, select, textarea, button").forEach((control) => {
+    const isPreviewControl = control.id === "fDivision" ||
+      (control.name === "segments" && control.type === "checkbox");
+    if (!isPreviewControl) control.disabled = true;
+  });
+  const submitButton = form.querySelector('button[type="submit"]');
+  if (submitButton) {
+    submitButton.disabled = true;
+    submitButton.setAttribute("aria-disabled", "true");
+    submitButton.textContent = "Registration opening soon";
+  }
+}
+
 function setupRegistrationForm() {
   const form = $("#registerForm");
   if (!form) return;
+  if (!PUBLIC_REGISTRATION_ENABLED) lockRegistrationPreview(form);
   form.addEventListener("change", (e) => {
     if (["division","club","member2Club","member3Club","mysteryMateClub","segments"].includes(e.target.name)) updateRegistrationFields();
   });
