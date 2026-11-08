@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="EVENTORA public test registration and payment workflow.">
+  <meta name="theme-color" content="#0a1d3b"><title>Public Test Mode · EVENTORA</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .test-wrap{max-width:820px;margin:0 auto;padding:48px 24px 80px}
+    .test-panel{background:#fff;border:1px solid var(--line);border-radius:18px;padding:26px;margin:20px 0;box-shadow:var(--shadow-sm)}
+    .test-panel label{display:grid;gap:7px;margin:12px 0;font-weight:600}
+    .test-panel input,.test-panel select{min-height:44px;border:1px solid #d8dde6;border-radius:9px;padding:10px;font:inherit}
+    .test-segments{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+    .test-segments label{display:flex;align-items:center;font-weight:500;gap:8px}
+    .test-segments input{min-height:auto}
+    .test-result{padding:14px;background:#f5f7fa;border-radius:10px;overflow-wrap:anywhere;margin-top:16px}
+    .test-result code{word-break:break-all}
+    .test-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    #testQr{display:inline-grid;place-items:center;background:#fff;padding:12px;margin-top:12px}
+    .test-alert{padding:14px;border:1px solid #e4d39b;background:#fff8e6;border-radius:10px;color:#644f19}
+  </style>
+  <script src="config.js"></script>\n  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" defer></script>
+  <script type="module" src="test.js"></script>
+</head>
+<body>
+<header class="site-header"><div class="container nav-wrap">
+  <a href="index.html" class="brand"><span class="brand-mark">E</span><span class="brand-name">EVENTORA</span></a>
+  <nav class="primary-nav"><ul><li><a href="index.html">Public website</a></li><li><a href="admin.html">Organizer Login</a></li></ul></nav>
+</div></header>
+<main class="test-wrap">
+  <p class="eyebrow">PUBLIC SANDBOX</p><h1>EVENTORA Test Mode</h1>
+  <p>Use this page to test the public registration and payment flow. All entries are synthetic TEST records and are stored separately from official registrations.</p>
+  <div class="test-alert"><strong>TEST ONLY — NO REAL PAYMENT.</strong> Do not enter names, emails, phone numbers, actual transaction references or any personal information. The test fee is a fixed demonstration amount and no money is transferred.</div>
+
+  <div class="test-alert" style="margin-top:14px"><strong>OFFICIAL LIVE MODE: LOCKED.</strong> Real registration remains closed until institutional approval and confirmed payment instructions.</div>
+  <section class="test-panel">
+    <h2>1. Create a test registration</h2>
+    <form id="testRegisterForm">
+      <label for="testDivision">Division</label><select id="testDivision" required><option value="A">Division A</option><option value="B">Division B</option><option value="C">Division C</option></select>
+      <fieldset><legend>Choose test segments</legend><div class="test-segments">
+        <label><input type="checkbox" name="testSegments" value="AP Debate"> AP Debate (Division C only)</label>
+        <label><input type="checkbox" name="testSegments" value="Debate IQ Quiz"> Debate IQ Quiz</label>
+        <label><input type="checkbox" name="testSegments" value="Movie Quiz"> Movie Quiz</label>
+        <label><input type="checkbox" name="testSegments" value="Mystery Case Challenge"> Mystery Case Challenge</label>
+        <label><input type="checkbox" name="testSegments" value="Creative Arguments"> Creative Arguments</label>
+        <label><input type="checkbox" name="testSegments" value="This or That"> This or That</label>
+        <label><input type="checkbox" name="testSegments" value="Extempore Speech"> Extempore Speech</label>
+        <label><input type="checkbox" name="testSegments" value="Baroari Debate"> Baroari Debate</label>
+      </div></fieldset>
+      <div class="test-actions"><button class="btn btn-gold" id="createTest" type="submit">Create TEST registration</button></div>
+    </form>
+    <div id="registrationResult" class="test-result" role="status" aria-live="polite" hidden></div>
+  </section>
+
+  <section class="test-panel" id="testPaymentPanel" hidden>
+    <h2>2. Submit dummy payment</h2><p>Only the generated TEST reference and a dummy transaction reference are accepted.</p>
+    <form id="testPaymentForm">
+      <label for="testPaymentMethod">Test payment method</label><select id="testPaymentMethod"><option>Test bKash</option><option>Test Nagad</option><option>Test Bank</option></select>
+      <label for="testTransaction">Dummy transaction reference</label><input id="testTransaction" minlength="13" maxlength="50" pattern="TEST-TXN-[A-Z0-9-]{4,40}" placeholder="TEST-TXN-ABCD1234" required>
+      <button class="btn btn-gold" type="submit">Submit TEST payment</button>
+    </form>
+    <div id="paymentResult" class="test-result" role="status" aria-live="polite" hidden></div>
+  </section>
+  <p class="section-help">Organizers can review TEST payments, mark them verified/rejected and run TEST check-in from the Organizer Dashboard. Test records never change official registrations or payment status.</p>
+</main>
+<footer class="container">EVENTORA · Public Test Mode · No real payment accepted</footer>
+</body></html>
