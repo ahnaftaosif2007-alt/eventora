@@ -19,3 +19,9 @@
 .rulebook-list{padding-left:22px;margin:0;color:var(--muted);font-size:13px}
 .rulebook-list li{padding:5px 0}
 @media(max-width:760px){.role-form{grid-template-columns:1fr}.role-form button{width:100%}}
+
+/* Payment verification queue */
+.payment-panel{margin:0 0 20px}
+.payment-actions{display:flex;flex-wrap:wrap;gap:6px;min-width:260px}
+.payment-actions input{width:100%;min-height:36px;border:1px solid #d8dde6;border-radius:8px;padding:7px 9px;font:inherit}
+.payment-actions .button{min-height:34px;padding:7px 10px}
