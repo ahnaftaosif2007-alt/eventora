@@ -9,6 +9,8 @@ on:
       - main
     paths:
       - "admin.js"
+      - "index.html"
+      - "script.js"
       - "supabase/payment_verification_v1.sql"
       - "tests/**"
       - ".github/workflows/payment-review-qa.yml"
@@ -35,3 +37,5 @@ jobs:
         run: node tests/payment-review-sql-contract-checks.mjs
       - name: Run registration/payment integration contract checks
         run: node tests/registration-payment-integration-contracts.mjs
+      - name: Run public event site content checks
+        run: node tests/public-site-content-checks.mjs
