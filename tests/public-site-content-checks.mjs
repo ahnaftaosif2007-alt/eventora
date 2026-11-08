@@ -12,6 +12,10 @@ assert.match(script, /date: "2026-12-13"/);
 assert.match(script, /dateEnd: "2026-12-14"/);
 assert.match(script, /eventStatus: "registration_setup"/);
 assert.match(script, /const PUBLIC_REGISTRATION_ENABLED = false/);
+assert.match(script, /function lockRegistrationPreview\(form\)/);
+assert.match(script, /control.id === "fDivision"/);
+assert.match(script, /control.name === "segments" && control.type === "checkbox"/);
+assert.match(script, /submitButton.disabled = true/);
 
 for (const sampleEvent of [
   "Design Thinking Workshop",
@@ -26,6 +30,8 @@ for (const sampleEvent of [
 assert.ok(html.includes("Preparatorian Debating Club of the Bangla Version Boys’ Wing"));
 assert.ok(html.includes("MPSC Debate Club of the Bangla Version Girls’ Wing"));
 assert.ok(html.includes("does not accept or store registration entries"));
+assert.ok(html.includes("fee-preview only"));
+assert.match(html, /id="registerForm"[\s\S]*?Registration opening soon<\/button>/);
 assert.ok(!html.includes("hello@example.com"));
 assert.ok(!html.includes("Sample Street"));
 assert.ok(!html.includes("+00 000 000 000"));
