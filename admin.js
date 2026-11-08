@@ -180,6 +180,7 @@ async function handlePaymentReview(event) {
   }
   showMessage("Payment marked as " + decision + ".", "success");
   await loadPaymentQueue();
+  if (currentRole === "main_admin") await loadPaymentAudit();
 }
 async function loadPaymentAudit() {
   if (currentRole !== "main_admin") return;
