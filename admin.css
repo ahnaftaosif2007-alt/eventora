@@ -25,3 +25,5 @@
 .payment-actions{display:flex;flex-wrap:wrap;gap:6px;min-width:260px}
 .payment-actions input{width:100%;min-height:36px;border:1px solid #d8dde6;border-radius:8px;padding:7px 9px;font:inherit}
 .payment-actions .button{min-height:34px;padding:7px 10px}
+
+.payment-audit-panel{margin-top:20px}.payment-audit-panel .table-foot{margin:12px 0 0;font-size:12px}.payment-audit-panel code{font-size:11px;white-space:normal;overflow-wrap:anywhere}.payment-audit-panel td{max-width:280px;white-space:normal;overflow-wrap:anywhere}
