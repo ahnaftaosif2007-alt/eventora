@@ -378,7 +378,7 @@ const SEGMENT_FEES = {
 };
 const CLUB_VALUES = ["boys", "girls"];
 // Temporary prototype switch. In the live registration system this will be read from Admin Dashboard settings.
-const EARLY_BIRD_ACTIVE = false;
+const EARLY_BIRD_ACTIVE = false; // Retained only as a fallback; live status is loaded from Supabase.
 const CLUB_DISCOUNT_RATE = 0.15;
 const EARLY_BIRD_DISCOUNT_RATE = 0.20;
 
@@ -516,7 +516,7 @@ function updateFeePreview() {
       clubSelections = clubSelections.concat($("#fMysteryMateClub").value);
     }
     const hasClubMember = clubSelections.some((value) => CLUB_VALUES.includes(value));
-    const discountRate = EARLY_BIRD_ACTIVE
+    const discountRate = liveEarlyBirdActive
       ? EARLY_BIRD_DISCOUNT_RATE
       : (hasClubMember ? CLUB_DISCOUNT_RATE : 0);
     const payable = roundTaka(base * (1 - discountRate));
@@ -795,6 +795,7 @@ function init() {
   setupNav();
   setupEventsPage();
   setupRegistrationForm();
+  loadLivePricing();
   setupShare();
 
   window.addEventListener("hashchange", render);
