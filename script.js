@@ -776,22 +776,39 @@ function setupEventsPage() {
 
 /* ----- Start the application ----- */
 function init() {
-  $("#statEvents").textContent = EVENTS.length;
-  $("#statCategories").textContent = CATEGORIES.length;
-  $("#year").textContent = new Date().getFullYear();
+  // Keep page routing available even if an optional widget fails to initialise.
+  const safely = (label, task) => {
+    try { task(); }
+    catch (error) { console.error("EVENTORA " + label + ":", error); }
+  };
 
-  buildChips();
-  populateEventOptions();
-  renderAnnouncements();
+  safely("event statistics", () => {
+    $("#statEvents").textContent = EVENTS.length;
+    $("#statCategories").textContent = CATEGORIES.length;
+    $("#year").textContent = new Date().getFullYear();
+  });
+  safely("event filters", buildChips);
+  safely("event options", populateEventOptions);
+  safely("announcements", renderAnnouncements);
+  safely("navigation menu", setupNav);
+  safely("events page", setupEventsPage);
+  safely("registration form", setupRegistrationForm);
+  safely("share tools", setupShare);
 
-  setupNav();
-  setupEventsPage();
-  setupRegistrationForm();
-  loadLivePricing();
-  setupShare();
+  // Native hash links plus delegated routing make every navigation link reliable.
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest('a[href^="#"]');
+    if (!link) return;
+    const target = link.getAttribute("href");
+    if (!target || target === "#") return;
+    event.preventDefault();
+    if (location.hash === target) render();
+    else location.hash = target;
+  });
 
   window.addEventListener("hashchange", render);
-  render();
+  safely("initial page render", render);
+  loadLivePricing();
 }
 
 init();
