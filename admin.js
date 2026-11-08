@@ -18,6 +18,7 @@ function showDashboard(email) {
   const isMain = currentRole === "main_admin";
   $("#pricingPanel").hidden = !isMain;
   $("#staffAccessPanel").hidden = !isMain;
+  $("#paymentPanel").hidden = !["main_admin", "payment_verifier"].includes(currentRole);
 }
 async function isAdministrator() {
   const { data, error } = await supabase.rpc("is_eventora_admin");
