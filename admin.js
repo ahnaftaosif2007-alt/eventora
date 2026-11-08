@@ -19,7 +19,8 @@ function showDashboard(email) {
   $("#pricingPanel").hidden = !isMain;
   $("#staffAccessPanel").hidden = !isMain;
   $("#paymentPanel").hidden = !["main_admin", "payment_verifier"].includes(currentRole);
-  $("#paymentAuditPanel").hidden = !isMain;\n  $("#testModePanel").hidden = false;
+  $("#paymentAuditPanel").hidden = !isMain;
+  $("#testModePanel").hidden = false;
 }
 async function isAdministrator() {
   const { data, error } = await supabase.rpc("is_eventora_admin");
@@ -393,7 +394,10 @@ async function init() {
   $("#search").addEventListener("input", renderRows);
   $("#statusFilter").addEventListener("change", renderRows);
   $("#registrationRows").addEventListener("click", handleTableClick);
-  $("#paymentRows")?.addEventListener("click", handlePaymentReview);\n  $("#testQueueRows")?.addEventListener("click",handleTestQueueClick);\n  $("#refreshTestQueue")?.addEventListener("click",loadTestQueue);\n  $("#testCheckinButton")?.addEventListener("click",handleTestCheckin);
+  $("#paymentRows")?.addEventListener("click", handlePaymentReview);
+  $("#testQueueRows")?.addEventListener("click",handleTestQueueClick);
+  $("#refreshTestQueue")?.addEventListener("click",loadTestQueue);
+  $("#testCheckinButton")?.addEventListener("click",handleTestCheckin);
   $("#refreshPayments")?.addEventListener("click", loadPaymentQueue);
   $("#refreshPaymentAudit")?.addEventListener("click", loadPaymentAudit);
   $("#staffRoleForm")?.addEventListener("submit", saveStaffRole);
