@@ -14,7 +14,7 @@ EVENTORA is a free event information and organizer portal built with HTML, CSS, 
 **Dates:** 13–14 December 2026  
 **Organisers:** Preparatorian Debating Club of Bangla Version Boys Wing and MPSC Debate Club of Bangla Version Girls Wing.
 
-The public site currently provides event information and a fee preview. Registration and payment submission are intentionally disabled. Do not announce registration as open until institutional approval, official contact details, participant privacy information, and confirmed payment instructions are in place.
+The public site currently provides event information and a fee preview. In preview mode, only division and segment selection are interactive; participant detail fields and registration submission are disabled. Registration and payment submission remain intentionally closed until launch approval and confirmed payment instructions are in place. Do not announce registration as open until institutional approval, official contact details, participant privacy information, and confirmed payment instructions are in place.
 
 ## Project structure
 
