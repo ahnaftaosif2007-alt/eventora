@@ -44,25 +44,7 @@ const EVENTS = [
       "Participants must follow the official schedule and instructions issued by the organisers."
     ]
   },
-  ...[
-    ["design-thinking-workshop", "Design Thinking Workshop", "Workshops", "2027-01-23"],
-    ["ai-in-education-talk", "The Future of AI in Education", "Talks", "2027-02-06"],
-    ["science-fair-2027", "Junior Science Fair 2027", "Competitions", "2027-02-20"],
-    ["community-photo-walk", "Community Photo Walk", "Community", "2027-03-06"],
-    ["autumn-mentoring-session", "Autumn Mentoring Session", "Workshops", "2026-11-21"]
-  ].map(([id, title, category, date]) => ({
-    id, title, category, date, featured: false,
-    time: "To be announced",
-    venue: "To be announced",
-    address: "Details will be announced later.",
-    fee: "To be announced",
-    capacity: null,
-    deadline: null,
-    eventStatus: "under_construction",
-    summary: "This event page is being prepared. Details will be published later.",
-    description: "Information about this event is currently under construction.",
-    rules: []
-  }))
+  // Only confirmed public event listings appear here. Add future events after their details are approved.
 ];
 
 const ANNOUNCEMENTS = [
