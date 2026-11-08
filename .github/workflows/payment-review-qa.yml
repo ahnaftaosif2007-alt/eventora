@@ -8,7 +8,11 @@ on:
     branches:
       - main
     paths:
-      - "admin.js"\n      - "admin.html"\n      - "test.html"\n      - "test.js"\n      - "supabase/test_mode_hardening_v1.sql"
+      - "admin.js"
+      - "admin.html"
+      - "test.html"
+      - "test.js"
+      - "supabase/test_mode_hardening_v1.sql"
       - "index.html"
       - "script.js"
       - "supabase/payment_verification_v1.sql"
