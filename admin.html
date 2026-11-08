@@ -106,6 +106,21 @@
         </div>
         <p id="paymentRecordCount" class="muted table-foot"></p>
       </section>
+      <section id="testModePanel" class="panel" hidden>
+        <div class="table-head">
+          <div><p class="eyebrow">ISOLATED SANDBOX</p><h3>Public TEST registrations &amp; payments</h3>
+            <p class="muted">TEST records only. Verify/Reject here; check-in never changes official registrations.</p></div>
+          <button id="refreshTestQueue" class="button secondary" type="button">Refresh TEST queue</button>
+        </div>
+        <div class="filters">
+          <input id="testCheckinToken" type="text" placeholder="Paste TEST QR token" aria-label="TEST QR token">
+          <button id="testCheckinButton" class="button primary" type="button">TEST check-in</button>
+        </div>
+        <div id="testCheckinMessage" class="notice" role="status" aria-live="polite" hidden></div>
+        <div class="table-wrap"><table><thead><tr><th>TEST reference</th><th>Division / segments</th><th>Dummy payment</th><th>Status</th><th>TEST QR token</th><th>Check-in</th><th>Decision</th></tr></thead>
+          <tbody id="testQueueRows"><tr><td colspan="7" class="empty">TEST queue not loaded.</td></tr></tbody></table></div>
+        <p id="testQueueCount" class="muted table-foot"></p>
+      </section>
       <section id="paymentAuditPanel" class="panel payment-audit-panel" hidden>
         <div class="table-head">
           <div><p class="eyebrow">ACCOUNTABILITY</p><h3>Payment review audit log</h3>
