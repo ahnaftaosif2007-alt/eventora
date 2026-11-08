@@ -30,6 +30,9 @@ const checks = [
   ["UI asks for confirmation", /window\.confirm\(/.test(handler)],
   ["UI calls the review RPC", /supabase\.rpc\("eventora_review_payment"/.test(handler)],
   ["UI reloads the payment queue", /await loadPaymentQueue\(\)/.test(handler)],
+  ["UI catches thrown network errors during review", /catch \(error\) \{[\s\S]*?Payment review failed:/.test(handler)],
+  ["UI re-enables review actions after a failed request", /catch \(error\) \{[\s\S]*?rowActions\?\.querySelectorAll\("button"\)\.forEach\(\(control\) => \{ control\.disabled = false; \}\)/.test(handler)],
+  ["UI disables both decision buttons while a review is processing", /rowActions\?\.querySelectorAll\("button"\)\.forEach\(\(control\) => \{ control\.disabled = true; \}\)/.test(handler)],
   ["Main Admin UI refreshes the audit log", /currentRole === "main_admin"\) await loadPaymentAudit\(\)/.test(handler)],
 ];
 
